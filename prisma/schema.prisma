@@ -1,0 +1,543 @@
+// Prisma schema file
+// Generated from ETAPA 3: Database Design
+// DO NOT modify without approval from Database Engineer
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ============================================================================
+// MUNICIPALITIES (Municipios)
+// ============================================================================
+
+model Municipality {
+  id                        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  countryCode               String   @default("CO") @db.VarChar(2)
+  name                      String   @db.VarChar(255)
+  department                String   @db.VarChar(255)
+  centerLatitude            Float
+  centerLongitude           Float
+  coverageRadiusKm          Int      @default(5)
+  maxDeliveryDistanceKm     Int      @default(10)
+  timezone                  String   @default("America/Bogota")
+  language                  String   @default("es") @db.VarChar(5)
+  currency                  String   @default("COP") @db.VarChar(3)
+  whatsappNumber            String?  @db.VarChar(20)
+  whatsappNumberId          String?  @db.VarChar(255) @unique
+  commissionPercentage      Decimal  @default(10.00) @db.Numeric(5, 2)
+  status                    String   @default("ACTIVE") @db.VarChar(50) // ACTIVE, PAUSED, CLOSED
+  isPublished               Boolean  @default(false)
+  activeCommerces           Int      @default(0)
+  activeDrivers             Int      @default(0)
+  dailyOrders               Int      @default(0)
+  monthlyRevenue            Decimal  @default(0) @db.Decimal(15, 2)
+  createdAt                 DateTime @default(now()) @db.Timestamptz()
+  updatedAt                 DateTime @updatedAt @db.Timestamptz()
+  launchedAt                DateTime? @db.Timestamptz()
+  deletedAt                 DateTime? @db.Timestamptz()
+  metadata                  Json?
+
+  // Relations
+  customers                 Customer[]
+  commerces                 Commerce[]
+  drivers                   Driver[]
+  orders                    Order[]
+
+  @@index([status])
+  @@index([isPublished])
+  @@index([countryCode])
+  @@fulltext([name])
+}
+
+// ============================================================================
+// CUSTOMERS (Usuarios/Clientes)
+// ============================================================================
+
+model Customer {
+  id                        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  municipalityId            String   @db.Uuid
+  phone                     String   @unique @db.VarChar(20)
+  email                     String?  @unique @db.VarChar(255)
+  name                      String   @db.VarChar(255)
+  preferredLanguage         String   @default("es") @db.VarChar(5)
+  homeLatitude              Float?
+  homeLongitude             Float?
+  rating                    Decimal  @default(5.0) @db.Numeric(2, 1)
+  totalOrders               Int      @default(0)
+  firstOrderAt              DateTime? @db.Timestamptz()
+  lastOrderAt               DateTime? @db.Timestamptz()
+  status                    String   @default("ACTIVE") @db.VarChar(50) // ACTIVE, SUSPENDED, DELETED
+  isVerified                Boolean  @default(false)
+  authToken                 String?  @db.VarChar(512)
+  authTokenExpiresAt        DateTime? @db.Timestamptz()
+  preferredPaymentMethod    String?  @db.VarChar(50) // CARD, BANK_TRANSFER
+  createdAt                 DateTime @default(now()) @db.Timestamptz()
+  updatedAt                 DateTime @updatedAt @db.Timestamptz()
+  createdBy                 String   @default("system") @db.VarChar(255)
+  updatedBy                 String   @default("system") @db.VarChar(255)
+  deletedAt                 DateTime? @db.Timestamptz()
+  metadata                  Json?
+
+  // Relations
+  municipality              Municipality @relation(fields: [municipalityId], references: [id])
+  orders                    Order[]
+  addresses                 CustomerAddress[]
+  ratings                   Rating[]
+
+  @@index([municipalityId])
+  @@index([status])
+  @@index([rating])
+  @@index([createdAt])
+  @@fulltext([name])
+}
+
+model CustomerAddress {
+  id                        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  customerId                String   @db.Uuid
+  street                    String   @db.VarChar(255)
+  number                    String   @db.VarChar(50)
+  neighborhood              String   @db.VarChar(255)
+  city                      String   @db.VarChar(255)
+  latitude                  Float
+  longitude                 Float
+  isDefault                 Boolean  @default(false)
+  createdAt                 DateTime @default(now()) @db.Timestamptz()
+  updatedAt                 DateTime @updatedAt @db.Timestamptz()
+
+  // Relations
+  customer                  Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+}
+
+// ============================================================================
+// COMMERCES (Tiendas/Restaurantes)
+// ============================================================================
+
+model Commerce {
+  id                        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  municipalityId            String   @db.Uuid
+  apiKey                    String   @unique @db.VarChar(256)
+  apiKeyHash                String?  @db.VarChar(256)
+  whatsappNumber            String   @unique @db.VarChar(20)
+  whatsappNumberId          String?  @db.VarChar(255)
+  name                      String   @db.VarChar(255)
+  displayName               String?  @db.VarChar(255)
+  category                  String   @db.VarChar(50) // RESTAURANT, STORE, PHARMACY, etc.
+  description               String?
+  locationLatitude          Float
+  locationLongitude         Float
+  nit                       String?  @unique @db.VarChar(20)
+  ownerName                 String   @db.VarChar(255)
+  ownerPhone                String   @db.VarChar(20)
+  ownerEmail                String   @db.VarChar(255)
+  logoUrl                   String?  @db.VarChar(2048)
+  heroImageUrl              String?  @db.VarChar(2048)
+  rating                    Decimal  @default(5.0) @db.Numeric(2, 1)
+  totalReviews              Int      @default(0)
+  totalOrders               Int      @default(0)
+  totalRevenue              Decimal  @default(0) @db.Decimal(15, 2)
+  isActive                  Boolean  @default(true)
+  isVerified                Boolean  @default(false)
+  isSuspended               Boolean  @default(false)
+  suspensionReason          String?
+  hoursMonday               Json?    // {open: "10:00", close: "22:00"}
+  hoursTuesday              Json?
+  hoursWednesday            Json?
+  hoursThursday             Json?
+  hoursFriday               Json?
+  hoursSaturday             Json?
+  hoursSunday               Json?
+  acceptsCash               Boolean  @default(true)
+  acceptsCard               Boolean  @default(true)
+  acceptsBankTransfer       Boolean  @default(false)
+  minOrderValue             Decimal  @default(0) @db.Decimal(10, 2)
+  deliveryCost              Decimal  @default(0) @db.Decimal(10, 2)
+  estimatedPrepTimeMinutes  Int      @default(15)
+  createdAt                 DateTime @default(now()) @db.Timestamptz()
+  updatedAt                 DateTime @updatedAt @db.Timestamptz()
+  verifiedAt                DateTime? @db.Timestamptz()
+  deletedAt                 DateTime? @db.Timestamptz()
+  metadata                  Json?
+
+  // Relations
+  municipality              Municipality @relation(fields: [municipalityId], references: [id])
+  products                  Product[]
+  orders                    Order[] @relation("CommerceToOrder")
+  orderItems                OrderItem[]
+
+  @@index([municipalityId])
+  @@index([category])
+  @@index([isActive])
+  @@index([isVerified])
+  @@index([rating])
+  @@fulltext([name, description])
+}
+
+// ============================================================================
+// PRODUCTS & CATEGORIES
+// ============================================================================
+
+model Product {
+  id                        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  commerceId                String   @db.Uuid
+  categoryId                String?  @db.Uuid
+  sku                       String?  @db.VarChar(100)
+  name                      String   @db.VarChar(255)
+  description               String?
+  imageUrl                  String?  @db.VarChar(2048)
+  basePrice                 Decimal  @db.Decimal(10, 2)
+  currency                  String   @default("COP") @db.VarChar(3)
+  stockStatus               String   @default("IN_STOCK") @db.VarChar(50) // IN_STOCK, LIMITED, OUT_OF_STOCK
+  isActive                  Boolean  @default(true)
+  isFeatured                Boolean  @default(false)
+  preparationTimeMinutes    Int      @default(0)
+  servingSize               String?  @db.VarChar(100)
+  ingredients               String?
+  allergens                 String?
+  isVegan                   Boolean  @default(false)
+  isVegetarian              Boolean  @default(false)
+  isSpicy                   Boolean  @default(false)
+  rating                    Decimal  @default(5.0) @db.Numeric(2, 1)
+  totalReviews              Int      @default(0)
+  totalSold                 Int      @default(0)
+  embedding                 Unsupported("vector(384)")?
+  createdAt                 DateTime @default(now()) @db.Timestamptz()
+  updatedAt                 DateTime @updatedAt @db.Timestamptz()
+  deletedAt                 DateTime? @db.Timestamptz()
+  metadata                  Json?
+
+  // Relations
+  commerce                  Commerce @relation(fields: [commerceId], references: [id], onDelete: Cascade)
+  orderItems                OrderItem[]
+
+  @@unique([commerceId, sku])
+  @@index([commerceId])
+  @@index([stockStatus])
+  @@index([isActive])
+  @@fulltext([name, description])
+}
+
+model Category {
+  id                        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                      String   @unique @db.VarChar(255)
+  description               String?
+  createdAt                 DateTime @default(now()) @db.Timestamptz()
+
+  @@index([name])
+}
+
+// ============================================================================
+// ORDERS & ORDER ITEMS
+// ============================================================================
+
+model Order {
+  id                        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  reference                 String   @unique @db.VarChar(100) // ORD-2024-00234
+  municipalityId            String   @db.Uuid
+  customerId                String   @db.Uuid
+  paymentId                 String?  @db.Uuid @unique
+  deliveryId                String?  @db.Uuid @unique
+  status                    String   @default("PENDING") @db.VarChar(50)
+  orderType                 String   @default("DELIVERY") @db.VarChar(50) // DELIVERY, PICKUP
+  customerLocationLatitude  Float
+  customerLocationLongitude Float
+  customerAddressText       String?  @db.VarChar(500)
+  customerPhone             String   @db.VarChar(20)
+  customerNotes             String?
+  subtotal                  Decimal  @db.Decimal(12, 2)
+  deliveryFee               Decimal  @default(0) @db.Decimal(10, 2)
+  discountAmount            Decimal  @default(0) @db.Decimal(10, 2)
+  taxAmount                 Decimal  @default(0) @db.Decimal(10, 2)
+  totalAmount               Decimal  @db.Decimal(12, 2)
+  currency                  String   @default("COP") @db.VarChar(3)
+  estimatedDeliveryMinutes  Int?
+  actualDeliveryMinutes     Int?
+  createdAt                 DateTime @default(now()) @db.Timestamptz()
+  updatedAt                 DateTime @updatedAt @db.Timestamptz()
+  confirmedAt               DateTime? @db.Timestamptz()
+  completedAt               DateTime? @db.Timestamptz()
+  cancelledAt               DateTime? @db.Timestamptz()
+  metadata                  Json?
+
+  // Relations
+  municipality              Municipality @relation(fields: [municipalityId], references: [id])
+  customer                  Customer @relation(fields: [customerId], references: [id])
+  items                     OrderItem[]
+  payment                   Payment?
+  delivery                  Delivery?
+  commerces                 Commerce[] @relation("CommerceToOrder")
+  ratings                   Rating[]
+  disputes                  Dispute[]
+  orderStates               OrderState[]
+
+  @@index([customerId])
+  @@index([municipalityId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([reference])
+}
+
+model OrderItem {
+  id                        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId                   String   @db.Uuid
+  commerceId                String   @db.Uuid
+  productId                 String   @db.Uuid
+  quantity                  Int
+  unitPrice                 Decimal  @db.Decimal(10, 2)
+  customizationText         String?
+  customizationExtraCost    Decimal  @default(0) @db.Decimal(10, 2)
+  subtotal                  Decimal  @db.Decimal(12, 2)
+  status                    String   @default("PENDING") @db.VarChar(50)
+  createdAt                 DateTime @default(now()) @db.Timestamptz()
+  updatedAt                 DateTime @updatedAt @db.Timestamptz()
+
+  // Relations
+  order                     Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  commerce                  Commerce @relation(fields: [commerceId], references: [id])
+  product                   Product @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([commerceId])
+  @@index([productId])
+  @@index([status])
+}
+
+model OrderState {
+  id                        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId                   String   @db.Uuid
+  previousStatus            String?  @db.VarChar(50)
+  newStatus                 String   @db.VarChar(50)
+  reason                    String?
+  createdAt                 DateTime @default(now()) @db.Timestamptz()
+  changedBy                 String?
+
+  // Relations
+  order                     Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// PAYMENTS & REFUNDS
+// ============================================================================
+
+model Payment {
+  id                        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId                   String   @db.Uuid @unique
+  wompiTransactionId        String?  @unique @db.VarChar(255)
+  wompiReference            String   @unique @db.VarChar(255)
+  amountInCents             BigInt
+  currency                  String   @default("COP") @db.VarChar(3)
+  status                    String   @default("PENDING") @db.VarChar(50) // PENDING, APPROVED, DECLINED, REFUNDED
+  paymentMethod             String?  @db.VarChar(50) // CARD, BANK_TRANSFER, CASH
+  customerEmail             String?  @db.VarChar(255)
+  cardLastFour              String?  @db.VarChar(4)
+  cardBrand                 String?  @db.VarChar(50) // VISA, MASTERCARD
+  fraudScore                Decimal? @db.Numeric(3, 1)
+  fraudStatus               String?  @db.VarChar(50) // APPROVED, SUSPICIOUS, BLOCKED
+  createdAt                 DateTime @default(now()) @db.Timestamptz()
+  updatedAt                 DateTime @updatedAt @db.Timestamptz()
+  approvedAt                DateTime? @db.Timestamptz()
+  declinedAt                DateTime? @db.Timestamptz()
+  webhookReceivedAt         DateTime? @db.Timestamptz()
+  metadata                  Json?
+
+  // Relations
+  order                     Order @relation(fields: [orderId], references: [id])
+  refunds                   Refund[]
+
+  @@index([status])
+  @@index([paymentMethod])
+  @@index([wompiReference])
+  @@index([createdAt])
+}
+
+model Refund {
+  id                        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  paymentId                 String   @db.Uuid
+  amountInCents             BigInt
+  reason                    String
+  status                    String   @default("PENDING") @db.VarChar(50)
+  createdAt                 DateTime @default(now()) @db.Timestamptz()
+  processedAt               DateTime? @db.Timestamptz()
+
+  // Relations
+  payment                   Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@index([paymentId])
+  @@index([status])
+}
+
+// ============================================================================
+// DRIVERS & DELIVERIES
+// ============================================================================
+
+model Driver {
+  id                        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  municipalityId            String   @db.Uuid
+  fullName                  String   @db.VarChar(255)
+  phone                     String   @unique @db.VarChar(20)
+  identificationNumber      String   @unique @db.VarChar(50)
+  identificationType        String   @db.VarChar(50) // CC, CE, PASAPORTE
+  dateOfBirth               DateTime? @db.Date
+  vehicleType               String   @db.VarChar(50) // BIKE, MOTORCYCLE, CAR
+  vehicleLicensePlate       String?  @unique @db.VarChar(20)
+  vehicleBrand              String?  @db.VarChar(100)
+  vehicleColor              String?  @db.VarChar(50)
+  insurancePolicyNumber     String?  @db.VarChar(100)
+  insuranceExpiryDate       DateTime? @db.Date
+  bankAccountNumber         String?  @db.VarChar(50)
+  bankAccountHolder         String?  @db.VarChar(255)
+  rating                    Decimal  @default(5.0) @db.Numeric(2, 1)
+  totalDeliveries           Int      @default(0)
+  isActive                  Boolean  @default(true)
+  isVerified                Boolean  @default(false)
+  isSuspended               Boolean  @default(false)
+  suspensionReason          String?
+  lastLocationUpdateAt      DateTime? @db.Timestamptz()
+  totalEarnings             Decimal  @default(0) @db.Decimal(15, 2)
+  monthlyEarnings           Decimal  @default(0) @db.Decimal(15, 2)
+  createdAt                 DateTime @default(now()) @db.Timestamptz()
+  updatedAt                 DateTime @updatedAt @db.Timestamptz()
+  verifiedAt                DateTime? @db.Timestamptz()
+  deletedAt                 DateTime? @db.Timestamptz()
+  metadata                  Json?
+
+  // Relations
+  municipality              Municipality @relation(fields: [municipalityId], references: [id])
+  deliveries                Delivery[]
+  earnings                  DriverEarning[]
+  ratings                   Rating[]
+
+  @@index([municipalityId])
+  @@index([isActive])
+  @@index([isVerified])
+  @@index([rating])
+  @@fulltext([fullName])
+}
+
+model Delivery {
+  id                        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId                   String   @db.Uuid @unique
+  driverId                  String   @db.Uuid
+  status                    String   @default("PENDING") @db.VarChar(50) // ASSIGNED, PICKING, DELIVERING, COMPLETED
+  pickupLocationLatitude    Float
+  pickupLocationLongitude   Float
+  deliveryLocationLatitude  Float
+  deliveryLocationLongitude Float
+  distanceKm                Decimal  @db.Decimal(10, 2)
+  estimatedDurationMinutes  Int
+  actualDurationMinutes     Int?
+  startedAt                 DateTime? @db.Timestamptz()
+  completedAt               DateTime? @db.Timestamptz()
+  deliveryProofPhotoUrl     String?  @db.VarChar(2048)
+  deliveryConfirmationPin   String?  @db.VarChar(10)
+  deliveryConfirmationTime  DateTime? @db.Timestamptz()
+  createdAt                 DateTime @default(now()) @db.Timestamptz()
+  updatedAt                 DateTime @updatedAt @db.Timestamptz()
+  metadata                  Json?
+
+  // Relations
+  order                     Order @relation(fields: [orderId], references: [id])
+  driver                    Driver @relation(fields: [driverId], references: [id])
+
+  @@index([driverId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model DriverEarning {
+  id                        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  driverId                  String   @db.Uuid
+  deliveryId                String   @db.Uuid
+  baseFee                   Decimal  @db.Decimal(10, 2)
+  bonusFee                  Decimal  @default(0) @db.Decimal(10, 2)
+  penaltyFee                Decimal  @default(0) @db.Decimal(10, 2)
+  totalAmount               Decimal  @db.Decimal(10, 2)
+  status                    String   @default("COMPLETED") @db.VarChar(50) // PENDING, COMPLETED, PAID
+  createdAt                 DateTime @default(now()) @db.Timestamptz()
+  paidAt                    DateTime? @db.Timestamptz()
+  liquidityBatchId          String?  @db.Uuid
+
+  // Relations
+  driver                    Driver @relation(fields: [driverId], references: [id])
+
+  @@index([driverId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// RATINGS & REVIEWS
+// ============================================================================
+
+model Rating {
+  id                        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId                   String   @db.Uuid
+  customerId                String   @db.Uuid
+  commerceId                String?  @db.Uuid
+  driverId                   String?  @db.Uuid
+  ratingType                String   @db.VarChar(50) // COMMERCE, DRIVER
+  score                     Int      @db.SmallInt // 1-5
+  review                    String?
+  createdAt                 DateTime @default(now()) @db.Timestamptz()
+
+  // Relations
+  order                     Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  customer                  Customer @relation(fields: [customerId], references: [id])
+  driver                    Driver? @relation(fields: [driverId], references: [id])
+
+  @@index([orderId])
+  @@index([customerId])
+  @@index([driverId])
+  @@index([ratingType])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// DISPUTES
+// ============================================================================
+
+model Dispute {
+  id                        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId                   String   @db.Uuid
+  reason                    String
+  description               String?
+  status                    String   @default("OPEN") @db.VarChar(50) // OPEN, IN_REVIEW, RESOLVED, CLOSED
+  resolution                String?
+  resolvedBy                String?
+  createdAt                 DateTime @default(now()) @db.Timestamptz()
+  resolvedAt                DateTime? @db.Timestamptz()
+
+  // Relations
+  order                     Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// SEARCH LOGS (Analytics)
+// ============================================================================
+
+model SearchLog {
+  id                        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  municipalityId            String   @db.Uuid
+  customerId                String?  @db.Uuid
+  query                     String
+  resultsCount              Int
+  clickedProductId          String?  @db.Uuid
+  clickedCommerceId         String?  @db.Uuid
+  createdAt                 DateTime @default(now()) @db.Timestamptz()
+
+  @@index([municipalityId])
+  @@index([createdAt])
+}
