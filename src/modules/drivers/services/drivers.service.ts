@@ -1,15 +1,18 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '@shared/database/prisma.service';
-import { RegisterDriverDto, UpdateDriverDto, DriverResponseDto, StartShiftDto, ShiftResponseDto } from '../dto';
+import {
+  RegisterDriverDto,
+  UpdateDriverDto,
+  DriverResponseDto,
+  StartShiftDto,
+  ShiftResponseDto,
+} from '../dto';
 
 @Injectable()
 export class DriversService {
   constructor(private prisma: PrismaService) {}
 
-  async registerDriver(
-    municipalityId: string,
-    dto: RegisterDriverDto,
-  ): Promise<DriverResponseDto> {
+  async registerDriver(municipalityId: string, dto: RegisterDriverDto): Promise<DriverResponseDto> {
     const existing = await this.prisma.driver.findUnique({
       where: { phone: dto.phone },
     });
@@ -55,10 +58,7 @@ export class DriversService {
     return this.formatDriver(driver);
   }
 
-  async updateDriver(
-    driverId: string,
-    dto: UpdateDriverDto,
-  ): Promise<DriverResponseDto> {
+  async updateDriver(driverId: string, dto: UpdateDriverDto): Promise<DriverResponseDto> {
     const driver = await this.prisma.driver.findUnique({
       where: { id: driverId },
     });

@@ -156,7 +156,7 @@ export class DeliveriesService {
       skip: offset,
     });
 
-    return deliveries.map((d) => this.formatDelivery(d));
+    return deliveries.map(d => this.formatDelivery(d));
   }
 
   async listActiveDeliveries(limit = 20) {
@@ -168,7 +168,7 @@ export class DeliveriesService {
       take: limit,
     });
 
-    return deliveries.map((d) => this.formatDelivery(d));
+    return deliveries.map(d => this.formatDelivery(d));
   }
 
   private formatDelivery(delivery: any): DeliveryResponseDto {

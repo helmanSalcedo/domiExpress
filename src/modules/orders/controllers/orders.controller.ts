@@ -41,10 +41,7 @@ export class OrdersController {
   @ApiCreatedResponse({ type: OrderResponseDto, description: 'Order created successfully' })
   @ApiBadRequestResponse({ description: 'Invalid input or business rule violation' })
   @ApiUnauthorizedResponse({ description: 'Unauthorized - JWT token invalid or missing' })
-  async createOrder(
-    @Body() dto: CreateOrderDto,
-    @Req() req: any,
-  ): Promise<OrderResponseDto> {
+  async createOrder(@Body() dto: CreateOrderDto, @Req() req: any): Promise<OrderResponseDto> {
     const customerId = req.user?.id;
     if (!customerId) {
       throw new Error('Customer ID not found in JWT token');
@@ -58,10 +55,7 @@ export class OrdersController {
   @ApiOkResponse({ type: OrderResponseDto, description: 'Order details' })
   @ApiNotFoundResponse({ description: 'Order not found' })
   @ApiUnauthorizedResponse({ description: 'Unauthorized - JWT token invalid or missing' })
-  async getOrder(
-    @Param('id') orderId: string,
-    @Req() req: any,
-  ): Promise<OrderResponseDto> {
+  async getOrder(@Param('id') orderId: string, @Req() req: any): Promise<OrderResponseDto> {
     const customerId = req.user?.id;
     return this.ordersService.getOrder(orderId, customerId);
   }
@@ -102,11 +96,7 @@ export class OrdersController {
     }
 
     if (customerId || req.user?.id) {
-      return this.ordersService.listCustomerOrders(
-        customerId || req.user.id,
-        limitNum,
-        offsetNum,
-      );
+      return this.ordersService.listCustomerOrders(customerId || req.user.id, limitNum, offsetNum);
     }
 
     if (commerceId) {
@@ -124,10 +114,7 @@ export class OrdersController {
   @ApiNotFoundResponse({ description: 'Order not found' })
   @ApiBadRequestResponse({ description: 'Cannot cancel order in current status' })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  async cancelOrder(
-    @Param('id') orderId: string,
-    @Req() req: any,
-  ): Promise<void> {
+  async cancelOrder(@Param('id') orderId: string, @Req() req: any): Promise<void> {
     const customerId = req.user?.id;
     if (!customerId) {
       throw new Error('Customer ID not found in JWT token');

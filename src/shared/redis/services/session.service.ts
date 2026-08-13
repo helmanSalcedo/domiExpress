@@ -21,16 +21,9 @@ export class SessionService {
   /**
    * Create a new session
    */
-  async createSession(
-    sessionId: string,
-    sessionData: SessionData,
-  ): Promise<void> {
+  async createSession(sessionId: string, sessionData: SessionData): Promise<void> {
     const key = RedisKeys.SESSION(sessionId);
-    await this.redisService.setJson(
-      key,
-      sessionData,
-      RedisKeys.SESSION_TTL,
-    );
+    await this.redisService.setJson(key, sessionData, RedisKeys.SESSION_TTL);
     this.logger.debug(`Created session: ${sessionId}`);
   }
 
@@ -51,11 +44,7 @@ export class SessionService {
 
     if (session) {
       session.lastActivity = new Date();
-      await this.redisService.setJson(
-        key,
-        session,
-        RedisKeys.SESSION_TTL,
-      );
+      await this.redisService.setJson(key, session, RedisKeys.SESSION_TTL);
     }
   }
 

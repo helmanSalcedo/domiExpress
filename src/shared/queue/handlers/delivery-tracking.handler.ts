@@ -35,7 +35,7 @@ export class DeliveryTrackingHandler {
       );
 
       // Simulate storage
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       job.progress(100);
     } catch (error) {

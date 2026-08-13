@@ -19,10 +19,7 @@ export {
   ChatMessageDto,
   ChatResponseDto,
 } from './dto/chat-session.dto';
-export {
-  WhatsAppMessageDto,
-  WhatsAppWebhookDto,
-} from './dto/whatsapp-webhook.dto';
+export { WhatsAppMessageDto, WhatsAppWebhookDto } from './dto/whatsapp-webhook.dto';
 
 // Export module
 export { ChatbotModule } from './chatbot.module';

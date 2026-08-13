@@ -20,21 +20,21 @@ export const testCase1 = {
       {
         productId: 'prod-hamburguesa-001',
         quantity: 1,
-        customizationText: 'Sin cebolla, extra queso'
-      }
+        customizationText: 'Sin cebolla, extra queso',
+      },
     ],
-    customerLatitude: 4.7110,
+    customerLatitude: 4.711,
     customerLongitude: -74.0076,
-    notes: 'Entregar en la puerta'
+    notes: 'Entregar en la puerta',
   } as CreateOrderDto,
 
   expectedCalculations: {
-    itemPrice: 25000,      // Precio unitario
+    itemPrice: 25000, // Precio unitario
     quantity: 1,
-    subtotal: 25000,       // 25k × 1
-    tax: 4750,             // 25k × 0.19
+    subtotal: 25000, // 25k × 1
+    tax: 4750, // 25k × 0.19
     deliveryFee: 5000,
-    total: 34750,          // 25k + 4.75k + 5k
+    total: 34750, // 25k + 4.75k + 5k
   },
 
   stateTransitions: [
@@ -48,14 +48,14 @@ export const testCase1 = {
   ],
 
   expectedResult: {
-    reference: 'ORD-XXXXXX-YYY',  // Formato
+    reference: 'ORD-XXXXXX-YYY', // Formato
     status: OrderStatus.PENDING,
     subtotal: 25000,
     taxAmount: 4750,
     deliveryFee: 5000,
     totalAmount: 34750,
     items: 1,
-  }
+  },
 };
 
 // ============================================================================
@@ -73,21 +73,21 @@ export const testCase2 = {
       {
         productId: 'prod-hamburguesa-002',
         quantity: 2,
-        customizationText: 'Sin cebolla'
+        customizationText: 'Sin cebolla',
       },
       {
         productId: 'prod-pizza-001',
         quantity: 1,
-        customizationText: 'Masa delgada'
+        customizationText: 'Masa delgada',
       },
       {
         productId: 'prod-bebida-001',
         quantity: 3,
-        customizationText: 'Fría'
-      }
+        customizationText: 'Fría',
+      },
     ],
-    customerLatitude: 4.7150,
-    customerLongitude: -74.0120,
+    customerLatitude: 4.715,
+    customerLongitude: -74.012,
   } as CreateOrderDto,
 
   expectedCalculations: {
@@ -96,16 +96,16 @@ export const testCase2 = {
       { product: 'Pizza', qty: 1, unitPrice: 35000, subtotal: 35000 },
       { product: 'Bebida', qty: 3, unitPrice: 5000, subtotal: 15000 },
     ],
-    subtotal: 100000,          // 50k + 35k + 15k
-    tax: 19000,                // 100k × 0.19
+    subtotal: 100000, // 50k + 35k + 15k
+    tax: 19000, // 100k × 0.19
     deliveryFee: 5000,
-    total: 124000,             // 100k + 19k + 5k
+    total: 124000, // 100k + 19k + 5k
   },
 
   expectedResult: {
     totalAmount: 124000,
     items: 3,
-  }
+  },
 };
 
 // ============================================================================
@@ -123,26 +123,26 @@ export const testCase3 = {
       {
         productId: 'prod-sandwich-001',
         quantity: 50,
-        customizationText: 'Variados'
-      }
+        customizationText: 'Variados',
+      },
     ],
-    customerLatitude: 4.7200,
-    customerLongitude: -74.0000,
+    customerLatitude: 4.72,
+    customerLongitude: -74.0,
   } as CreateOrderDto,
 
   expectedCalculations: {
     itemPrice: 15000,
     quantity: 50,
-    subtotal: 750000,          // 15k × 50
-    tax: 142500,               // 750k × 0.19
+    subtotal: 750000, // 15k × 50
+    tax: 142500, // 750k × 0.19
     deliveryFee: 5000,
-    total: 897500,             // 750k + 142.5k + 5k
+    total: 897500, // 750k + 142.5k + 5k
   },
 
   expectedResult: {
     totalAmount: 897500,
     items: 1,
-  }
+  },
 };
 
 // ============================================================================
@@ -160,9 +160,9 @@ export const testCase4 = {
       {
         productId: 'prod-001',
         quantity: 1,
-      }
+      },
     ],
-    customerLatitude: 4.7110,
+    customerLatitude: 4.711,
     customerLongitude: -74.0076,
   } as CreateOrderDto,
 
@@ -178,8 +178,8 @@ export const testCase4 = {
 
   validation: {
     shouldAllow: true,
-    reason: 'Can cancel from PENDING state'
-  }
+    reason: 'Can cancel from PENDING state',
+  },
 };
 
 // ============================================================================
@@ -201,8 +201,8 @@ export const testCase5 = {
 
   validation: {
     shouldAllow: false,
-    reason: 'Can only cancel from PENDING or CONFIRMED'
-  }
+    reason: 'Can only cancel from PENDING or CONFIRMED',
+  },
 };
 
 // ============================================================================
@@ -225,14 +225,24 @@ export const testCase6 = {
   invalidTransitions: [
     { from: OrderStatus.PENDING, to: OrderStatus.IN_TRANSIT, valid: false, reason: 'Skip states' },
     { from: OrderStatus.DELIVERED, to: OrderStatus.PENDING, valid: false, reason: 'Backwards' },
-    { from: OrderStatus.COMPLETED, to: OrderStatus.PENDING, valid: false, reason: 'Terminal state' },
-    { from: OrderStatus.CANCELLED, to: OrderStatus.PENDING, valid: false, reason: 'Terminal state' },
+    {
+      from: OrderStatus.COMPLETED,
+      to: OrderStatus.PENDING,
+      valid: false,
+      reason: 'Terminal state',
+    },
+    {
+      from: OrderStatus.CANCELLED,
+      to: OrderStatus.PENDING,
+      valid: false,
+      reason: 'Terminal state',
+    },
   ],
 
   expectedBehavior: {
     validTransitions: 'All should succeed',
-    invalidTransitions: 'All should throw BadRequestException'
-  }
+    invalidTransitions: 'All should throw BadRequestException',
+  },
 };
 
 // ============================================================================
@@ -249,7 +259,7 @@ export const testCase7 = {
       itemPrice: 1000,
       quantity: 1,
       subtotal: 1000,
-      tax: 190,           // 1000 × 0.19
+      tax: 190, // 1000 × 0.19
       deliveryFee: 5000,
       total: 6190,
     },
@@ -279,8 +289,8 @@ export const testCase7 = {
       tax: 9500,
       deliveryFee: 5000,
       total: 64500,
-    }
-  ]
+    },
+  ],
 };
 
 // ============================================================================
@@ -326,7 +336,7 @@ export const testCase8 = {
     shouldAllow: false,
     expectedStatus: 404,
     expectedError: 'NotFoundException',
-  }
+  },
 };
 
 // ============================================================================
@@ -368,7 +378,7 @@ export const testCase9 = {
       shouldFail: true,
       error: 'BadRequestException (Min validation)',
     },
-  ]
+  ],
 };
 
 // ============================================================================
@@ -414,8 +424,8 @@ export const testCase10 = {
       totalAmount: 'number',
       createdAt: 'Date',
       updatedAt: 'Date',
-    }
-  ]
+    },
+  ],
 };
 
 // ============================================================================
@@ -443,5 +453,5 @@ export const validationSummary = {
     stateTransitions: 'All should follow state machine rules',
     calculations: 'All should calculate totals correctly',
     security: 'All should enforce customer scoping',
-  }
+  },
 };

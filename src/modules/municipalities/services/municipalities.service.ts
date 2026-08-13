@@ -11,9 +11,7 @@ import {
 export class MunicipalitiesService {
   constructor(private prisma: PrismaService) {}
 
-  async createMunicipality(
-    dto: CreateMunicipalityDto,
-  ): Promise<MunicipalityResponseDto> {
+  async createMunicipality(dto: CreateMunicipalityDto): Promise<MunicipalityResponseDto> {
     const existing = await this.prisma.municipality.findFirst({
       where: { name: dto.name },
     });
@@ -48,10 +46,7 @@ export class MunicipalitiesService {
     return this.formatMunicipality(municipality);
   }
 
-  async listMunicipalities(
-    skip = 0,
-    take = 20,
-  ): Promise<MunicipalityResponseDto[]> {
+  async listMunicipalities(skip = 0, take = 20): Promise<MunicipalityResponseDto[]> {
     const municipalities = await this.prisma.municipality.findMany({
       where: { status: 'ACTIVE' },
       skip,
@@ -59,7 +54,7 @@ export class MunicipalitiesService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return municipalities.map((m) => this.formatMunicipality(m));
+    return municipalities.map(m => this.formatMunicipality(m));
   }
 
   async updateMunicipality(
@@ -127,7 +122,7 @@ export class MunicipalitiesService {
     });
 
     let averageDeliveryTime = 0;
-    const completedDeliveries = deliveries.filter((d) => d.completedAt);
+    const completedDeliveries = deliveries.filter(d => d.completedAt);
     if (completedDeliveries.length > 0) {
       const totalTime = completedDeliveries.reduce((sum, d) => {
         const time = d.actualDurationMinutes || 0;
@@ -140,9 +135,8 @@ export class MunicipalitiesService {
       where: { municipalityId, isActive: true },
     });
 
-    const completionRate = deliveries.length > 0
-      ? (completedDeliveries.length / deliveries.length) * 100
-      : 0;
+    const completionRate =
+      deliveries.length > 0 ? (completedDeliveries.length / deliveries.length) * 100 : 0;
 
     return {
       municipalityId,

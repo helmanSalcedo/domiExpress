@@ -46,9 +46,7 @@ export class E2eTestHelper {
   }
 
   // Helper for authenticated requests
-  async authenticatedRequest(
-    token: string,
-  ): Promise<request.SuperTest<request.Test>> {
+  async authenticatedRequest(token: string): Promise<request.SuperTest<request.Test>> {
     return request(this.app.getHttpServer()).set('Authorization', `Bearer ${token}`);
   }
 
@@ -89,7 +87,7 @@ export class E2eTestHelper {
       data: {
         name: 'Test Municipality',
         department: 'Test Department',
-        centerLatitude: 4.7110,
+        centerLatitude: 4.711,
         centerLongitude: -74.0721,
         status: 'ACTIVE',
       },
@@ -111,7 +109,7 @@ export class E2eTestHelper {
         whatsappNumber: '+573169999999',
         name: 'Test Commerce',
         category: 'RESTAURANT',
-        locationLatitude: 4.7110,
+        locationLatitude: 4.711,
         locationLongitude: -74.0721,
         ownerName: 'Test Owner',
         ownerPhone: '+573002222222',

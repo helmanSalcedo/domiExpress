@@ -42,10 +42,7 @@ export class ChatSessionService {
     return session ? this.mapToDto(session) : null;
   }
 
-  async updateSession(
-    sessionId: string,
-    data: Partial<ChatSessionDto>,
-  ): Promise<ChatSessionDto> {
+  async updateSession(sessionId: string, data: Partial<ChatSessionDto>): Promise<ChatSessionDto> {
     const updated = await this.prisma.chatSession.update({
       where: { id: sessionId },
       data: {

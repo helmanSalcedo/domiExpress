@@ -36,30 +36,24 @@ export class ChatMessageService {
     return this.mapToDto(message);
   }
 
-  async getSessionMessages(
-    chatSessionId: string,
-    limit: number = 50,
-  ): Promise<ChatMessageDto[]> {
+  async getSessionMessages(chatSessionId: string, limit: number = 50): Promise<ChatMessageDto[]> {
     const messages = await this.prisma.chatMessage.findMany({
       where: { chatSessionId },
       orderBy: { createdAt: 'asc' },
       take: limit,
     });
 
-    return messages.map((msg) => this.mapToDto(msg));
+    return messages.map(msg => this.mapToDto(msg));
   }
 
-  async getRecentMessages(
-    chatSessionId: string,
-    count: number = 10,
-  ): Promise<ChatMessageDto[]> {
+  async getRecentMessages(chatSessionId: string, count: number = 10): Promise<ChatMessageDto[]> {
     const messages = await this.prisma.chatMessage.findMany({
       where: { chatSessionId },
       orderBy: { createdAt: 'desc' },
       take: count,
     });
 
-    return messages.reverse().map((msg) => this.mapToDto(msg));
+    return messages.reverse().map(msg => this.mapToDto(msg));
   }
 
   private mapToDto(message: any): ChatMessageDto {

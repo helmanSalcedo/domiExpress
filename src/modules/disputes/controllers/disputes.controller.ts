@@ -1,5 +1,11 @@
 import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiCreatedResponse,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
 import { DisputesService } from '../services/disputes.service';
 import {
@@ -65,7 +71,9 @@ export class DisputesController {
   @Get('admin/stats')
   @ApiOperation({ summary: 'Get dispute statistics' })
   @ApiOkResponse({ type: DisputeStatsDto })
-  async getDisputeStats(@Query('municipalityId') municipalityId?: string): Promise<DisputeStatsDto> {
+  async getDisputeStats(
+    @Query('municipalityId') municipalityId?: string,
+  ): Promise<DisputeStatsDto> {
     return this.disputesService.getDisputeStats(municipalityId);
   }
 }

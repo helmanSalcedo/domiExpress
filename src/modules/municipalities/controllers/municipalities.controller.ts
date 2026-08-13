@@ -1,5 +1,11 @@
 import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiCreatedResponse,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
 import { MunicipalitiesService } from '../services/municipalities.service';
 import {
@@ -19,9 +25,7 @@ export class MunicipalitiesController {
   @Post()
   @ApiOperation({ summary: 'Create a new municipality' })
   @ApiCreatedResponse({ type: MunicipalityResponseDto })
-  async createMunicipality(
-    @Body() dto: CreateMunicipalityDto,
-  ): Promise<MunicipalityResponseDto> {
+  async createMunicipality(@Body() dto: CreateMunicipalityDto): Promise<MunicipalityResponseDto> {
     return this.municipalitiesService.createMunicipality(dto);
   }
 

@@ -41,10 +41,7 @@ class ChatbotRestClient {
   }
 
   // Crear nueva sesión
-  async createSession(
-    customerId: string,
-    municipalityId: string,
-  ): Promise<ChatSession> {
+  async createSession(customerId: string, municipalityId: string): Promise<ChatSession> {
     const response = await this.client.post('/chat/sessions', {
       customerId,
       municipalityId,
@@ -59,10 +56,7 @@ class ChatbotRestClient {
   }
 
   // Enviar mensaje
-  async sendMessage(
-    customerId: string,
-    content: string,
-  ): Promise<ChatResponse> {
+  async sendMessage(customerId: string, content: string): Promise<ChatResponse> {
     const response = await this.client.post('/chat/messages', {
       customerId,
       content,
@@ -74,9 +68,7 @@ class ChatbotRestClient {
 
   // Obtener historial de conversación
   async getHistory(sessionId: string, limit: number = 50) {
-    const response = await this.client.get(
-      `/chat/sessions/${sessionId}/history?limit=${limit}`,
-    );
+    const response = await this.client.get(`/chat/sessions/${sessionId}/history?limit=${limit}`);
     return response.data;
   }
 

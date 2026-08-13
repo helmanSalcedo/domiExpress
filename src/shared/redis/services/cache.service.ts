@@ -11,11 +11,7 @@ export class CacheService {
   /**
    * Get or execute - returns cached value or executes function and caches result
    */
-  async getOrExecute<T>(
-    key: string,
-    executor: () => Promise<T>,
-    ttl?: number,
-  ): Promise<T> {
+  async getOrExecute<T>(key: string, executor: () => Promise<T>, ttl?: number): Promise<T> {
     // Try to get from cache
     const cached = await this.redisService.getJson<T>(key);
     if (cached !== null) {
@@ -34,27 +30,16 @@ export class CacheService {
   /**
    * Cache search results
    */
-  async cacheSearchResults<T>(
-    query: string,
-    municipalityId: string,
-    results: T[],
-  ): Promise<void> {
+  async cacheSearchResults<T>(query: string, municipalityId: string, results: T[]): Promise<void> {
     const key = RedisKeys.SEARCH_RESULTS(query, municipalityId);
-    await this.redisService.setJson(
-      key,
-      results,
-      RedisKeys.SEARCH_TTL,
-    );
+    await this.redisService.setJson(key, results, RedisKeys.SEARCH_TTL);
     this.logger.debug(`Cached search results for query: "${query}"`);
   }
 
   /**
    * Get cached search results
    */
-  async getSearchResults<T>(
-    query: string,
-    municipalityId: string,
-  ): Promise<T[] | null> {
+  async getSearchResults<T>(query: string, municipalityId: string): Promise<T[] | null> {
     const key = RedisKeys.SEARCH_RESULTS(query, municipalityId);
     return this.redisService.getJson<T[]>(key);
   }
@@ -87,24 +72,15 @@ export class CacheService {
   /**
    * Cache commerce status
    */
-  async cacheCommerceStatus(
-    commerceId: string,
-    status: Record<string, any>,
-  ): Promise<void> {
+  async cacheCommerceStatus(commerceId: string, status: Record<string, any>): Promise<void> {
     const key = RedisKeys.COMMERCE_STATUS(commerceId);
-    await this.redisService.setJson(
-      key,
-      status,
-      RedisKeys.COMMERCE_STATUS_TTL,
-    );
+    await this.redisService.setJson(key, status, RedisKeys.COMMERCE_STATUS_TTL);
   }
 
   /**
    * Get cached commerce status
    */
-  async getCommerceStatus(
-    commerceId: string,
-  ): Promise<Record<string, any> | null> {
+  async getCommerceStatus(commerceId: string): Promise<Record<string, any> | null> {
     const key = RedisKeys.COMMERCE_STATUS(commerceId);
     return this.redisService.getJson<Record<string, any>>(key);
   }
@@ -121,10 +97,7 @@ export class CacheService {
   /**
    * Cache analytics data
    */
-  async cacheAnalytics(
-    analyticsKey: string,
-    data: Record<string, any>,
-  ): Promise<void> {
+  async cacheAnalytics(analyticsKey: string, data: Record<string, any>): Promise<void> {
     const key = RedisKeys.ANALYTICS(analyticsKey);
     await this.redisService.setJson(key, data, RedisKeys.ANALYTICS_TTL);
   }
@@ -148,11 +121,7 @@ export class CacheService {
   /**
    * Warm cache with data
    */
-  async warmCache<T>(
-    key: string,
-    executor: () => Promise<T>,
-    ttl?: number,
-  ): Promise<void> {
+  async warmCache<T>(key: string, executor: () => Promise<T>, ttl?: number): Promise<void> {
     try {
       const data = await executor();
       await this.redisService.setJson(key, data, ttl);

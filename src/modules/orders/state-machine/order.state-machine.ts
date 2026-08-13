@@ -21,9 +21,7 @@ export class OrderStateMachine {
 
   static validateTransition(currentStatus: OrderStatus, nextStatus: OrderStatus): void {
     if (!this.canTransition(currentStatus, nextStatus)) {
-      throw new BadRequestException(
-        `Cannot transition from ${currentStatus} to ${nextStatus}`,
-      );
+      throw new BadRequestException(`Cannot transition from ${currentStatus} to ${nextStatus}`);
     }
   }
 

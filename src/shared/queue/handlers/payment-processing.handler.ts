@@ -18,14 +18,10 @@ export class PaymentProcessingHandler {
   private readonly logger = new Logger(PaymentProcessingHandler.name);
 
   @Process()
-  async handlePaymentProcessing(
-    job: Job<PaymentProcessingPayload>,
-  ): Promise<void> {
+  async handlePaymentProcessing(job: Job<PaymentProcessingPayload>): Promise<void> {
     const { paymentId, orderId, amount } = job.data;
 
-    this.logger.debug(
-      `Processing payment ${paymentId} for order ${orderId}: $${amount}`,
-    );
+    this.logger.debug(`Processing payment ${paymentId} for order ${orderId}: $${amount}`);
 
     try {
       // TODO: Integrate with Wompi Payment API
@@ -35,14 +31,12 @@ export class PaymentProcessingHandler {
       this.logger.log(`[PAYMENT] Payment ${paymentId} initiated`);
 
       // Simulate validation
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
       job.progress(50);
 
       // Simulate processing
       const transactionId = `TXN-${Date.now()}`;
-      this.logger.log(
-        `[PAYMENT] Payment ${paymentId} processed - Transaction: ${transactionId}`,
-      );
+      this.logger.log(`[PAYMENT] Payment ${paymentId} processed - Transaction: ${transactionId}`);
 
       job.progress(75);
 
@@ -56,7 +50,7 @@ export class PaymentProcessingHandler {
       // });
 
       // Simulate completion
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 500));
       job.progress(100);
 
       // TODO: Update payment status to CONFIRMED

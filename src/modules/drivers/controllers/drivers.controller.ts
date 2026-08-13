@@ -1,17 +1,20 @@
+import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards } from '@nestjs/common';
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Body,
-  Param,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiCreatedResponse,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
 import { DriversService } from '../services/drivers.service';
-import { RegisterDriverDto, UpdateDriverDto, DriverResponseDto, StartShiftDto, ShiftResponseDto } from '../dto';
+import {
+  RegisterDriverDto,
+  UpdateDriverDto,
+  DriverResponseDto,
+  StartShiftDto,
+  ShiftResponseDto,
+} from '../dto';
 
 @ApiTags('Drivers')
 @Controller('drivers')
@@ -66,10 +69,7 @@ export class DriversController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'End driver shift' })
   @ApiOkResponse({ type: ShiftResponseDto })
-  async endShift(
-    @Param('id') driverId: string,
-    @Body() dto: any,
-  ): Promise<ShiftResponseDto> {
+  async endShift(@Param('id') driverId: string, @Body() dto: any): Promise<ShiftResponseDto> {
     return this.driversService.endShift(driverId, dto);
   }
 

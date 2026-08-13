@@ -15,16 +15,13 @@ describe('Auth E2E', () => {
 
   describe('Customer Authentication', () => {
     it('should register a new customer', async () => {
-      const response = await helper
-        .request()
-        .post('/auth/customers/register')
-        .send({
-          municipalityId: '123e4567-e89b-12d3-a456-426614174000',
-          phone: '+573001234567',
-          name: 'John Doe',
-          password: 'SecurePassword123',
-          preferredLanguage: 'es',
-        });
+      const response = await helper.request().post('/auth/customers/register').send({
+        municipalityId: '123e4567-e89b-12d3-a456-426614174000',
+        phone: '+573001234567',
+        name: 'John Doe',
+        password: 'SecurePassword123',
+        preferredLanguage: 'es',
+      });
 
       expect(response.status).toBe(201);
       expect(response.body).toHaveProperty('accessToken');
@@ -46,16 +43,13 @@ describe('Auth E2E', () => {
       });
 
       // Second registration with same phone
-      const response = await helper
-        .request()
-        .post('/auth/customers/register')
-        .send({
-          municipalityId: '123e4567-e89b-12d3-a456-426614174000',
-          phone,
-          name: 'Second User',
-          password: 'SecurePassword123',
-          preferredLanguage: 'es',
-        });
+      const response = await helper.request().post('/auth/customers/register').send({
+        municipalityId: '123e4567-e89b-12d3-a456-426614174000',
+        phone,
+        name: 'Second User',
+        password: 'SecurePassword123',
+        preferredLanguage: 'es',
+      });
 
       expect(response.status).toBe(400);
       expect(response.body.message).toContain('already exists');
@@ -75,13 +69,10 @@ describe('Auth E2E', () => {
       });
 
       // Login
-      const response = await helper
-        .request()
-        .post('/auth/customers/login')
-        .send({
-          phone,
-          password,
-        });
+      const response = await helper.request().post('/auth/customers/login').send({
+        phone,
+        password,
+      });
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('accessToken');
@@ -101,25 +92,19 @@ describe('Auth E2E', () => {
       });
 
       // Try login with wrong password
-      const response = await helper
-        .request()
-        .post('/auth/customers/login')
-        .send({
-          phone,
-          password: 'WrongPassword123',
-        });
+      const response = await helper.request().post('/auth/customers/login').send({
+        phone,
+        password: 'WrongPassword123',
+      });
 
       expect(response.status).toBe(401);
     });
 
     it('should not login with non-existent customer', async () => {
-      const response = await helper
-        .request()
-        .post('/auth/customers/login')
-        .send({
-          phone: '+573007777777',
-          password: 'AnyPassword123',
-        });
+      const response = await helper.request().post('/auth/customers/login').send({
+        phone: '+573007777777',
+        password: 'AnyPassword123',
+      });
 
       expect(response.status).toBe(401);
     });
@@ -127,20 +112,17 @@ describe('Auth E2E', () => {
 
   describe('Commerce Authentication', () => {
     it('should register a new commerce', async () => {
-      const response = await helper
-        .request()
-        .post('/auth/commerces/register')
-        .send({
-          municipalityId: '123e4567-e89b-12d3-a456-426614174000',
-          name: 'Test Restaurant',
-          category: 'RESTAURANT',
-          phone: '+573108888888',
-          ownerName: 'Juan García',
-          ownerEmail: 'juan@restaurant.com',
-          latitude: 4.7110,
-          longitude: -74.0721,
-          password: 'CommercePassword123',
-        });
+      const response = await helper.request().post('/auth/commerces/register').send({
+        municipalityId: '123e4567-e89b-12d3-a456-426614174000',
+        name: 'Test Restaurant',
+        category: 'RESTAURANT',
+        phone: '+573108888888',
+        ownerName: 'Juan García',
+        ownerEmail: 'juan@restaurant.com',
+        latitude: 4.711,
+        longitude: -74.0721,
+        password: 'CommercePassword123',
+      });
 
       expect(response.status).toBe(201);
       expect(response.body).toHaveProperty('accessToken');
@@ -160,19 +142,16 @@ describe('Auth E2E', () => {
         phone: '+573109999999',
         ownerName: 'Test Owner',
         ownerEmail: 'owner@test.com',
-        latitude: 4.7110,
+        latitude: 4.711,
         longitude: -74.0721,
         password,
       });
 
       // Login with API key
-      const response = await helper
-        .request()
-        .post('/auth/commerces/login')
-        .send({
-          apiKey,
-          password,
-        });
+      const response = await helper.request().post('/auth/commerces/login').send({
+        apiKey,
+        password,
+      });
 
       // Should either succeed or return specific error
       expect([200, 401]).toContain(response.status);

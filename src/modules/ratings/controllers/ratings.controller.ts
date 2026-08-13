@@ -1,5 +1,11 @@
 import { Controller, Get, Post, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiCreatedResponse,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
 import { RatingsService } from '../services/ratings.service';
 import {
@@ -19,10 +25,7 @@ export class RatingsController {
   @Post()
   @ApiOperation({ summary: 'Rate an order' })
   @ApiCreatedResponse({ type: RatingResponseDto })
-  async rateOrder(
-    @Request() req: any,
-    @Body() dto: CreateRatingDto,
-  ): Promise<RatingResponseDto> {
+  async rateOrder(@Request() req: any, @Body() dto: CreateRatingDto): Promise<RatingResponseDto> {
     return this.ratingsService.createRating(req.user.id, dto);
   }
 

@@ -49,12 +49,12 @@ class ChatbotClient {
     });
 
     // Evento de conexión exitosa del servidor
-    this.socket.on('connected', (data) => {
+    this.socket.on('connected', data => {
       console.log('📍 Socket ID:', data.socketId);
     });
 
     // Respuesta del chatbot
-    this.socket.on('message_response', (data) => {
+    this.socket.on('message_response', data => {
       if (data.status === 'success') {
         console.log('\n🤖 Bot:', data.data.response);
         console.log(`⏱️  Tiempo: ${data.data.processingTimeMs}ms`);
@@ -63,17 +63,17 @@ class ChatbotClient {
     });
 
     // Mensajes de otros clientes en la misma sesión
-    this.socket.on('message_received', (data) => {
+    this.socket.on('message_received', data => {
       console.log('\n👥 Otro cliente:', data.response);
     });
 
     // Errores
-    this.socket.on('error', (data) => {
+    this.socket.on('error', data => {
       console.error('⚠️  Error:', data.message);
     });
 
     // Pong del ping
-    this.socket.on('message', (data) => {
+    this.socket.on('message', data => {
       if (data.status === 'pong') {
         console.log('✓ Conexión activa');
       }

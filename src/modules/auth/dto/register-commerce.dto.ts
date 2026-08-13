@@ -1,4 +1,12 @@
-import { IsEmail, IsPhoneNumber, IsString, IsNumber, MinLength, MaxLength, IsOptional } from 'class-validator';
+import {
+  IsEmail,
+  IsPhoneNumber,
+  IsString,
+  IsNumber,
+  MinLength,
+  MaxLength,
+  IsOptional,
+} from 'class-validator';
 
 export class RegisterCommerceDto {
   @IsPhoneNumber('CO')

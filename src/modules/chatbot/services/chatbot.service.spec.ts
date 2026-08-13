@@ -47,9 +47,7 @@ describe('ChatbotService', () => {
     service = module.get<ChatbotService>(ChatbotService);
     sessionService = module.get<ChatSessionService>(ChatSessionService);
     messageService = module.get<ChatMessageService>(ChatMessageService);
-    claudeService = module.get<ClaudeIntegrationService>(
-      ClaudeIntegrationService,
-    );
+    claudeService = module.get<ClaudeIntegrationService>(ClaudeIntegrationService);
   });
 
   afterEach(() => {
@@ -91,7 +89,11 @@ describe('ChatbotService', () => {
       mockClaudeService.processMessage.mockResolvedValue(mockClaudeResponse);
       mockMessageService.createMessage
         .mockResolvedValueOnce({ id: 'msg-1', role: 'USER' })
-        .mockResolvedValueOnce({ id: 'msg-2', role: 'ASSISTANT', content: mockClaudeResponse.response });
+        .mockResolvedValueOnce({
+          id: 'msg-2',
+          role: 'ASSISTANT',
+          content: mockClaudeResponse.response,
+        });
 
       const result = await service.processMessage(customerId, message, municipalityId);
 

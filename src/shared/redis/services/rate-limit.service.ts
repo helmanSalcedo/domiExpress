@@ -67,7 +67,7 @@ export class RateLimitService {
     resetAt: Date;
   }> {
     const key = RedisKeys.RATE_LIMIT(identifier);
-    const current = parseInt(await this.redisService.get(key) || '0', 10);
+    const current = parseInt((await this.redisService.get(key)) || '0', 10);
     const ttl = await this.redisService.ttl(key);
     const resetAt = ttl > 0 ? new Date(Date.now() + ttl * 1000) : new Date();
 

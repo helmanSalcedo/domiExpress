@@ -54,22 +54,16 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     // Log based on status code
     if (status >= 500) {
-      this.logger.error(
-        `[${traceId}] ${request.method} ${request.url}`,
-        {
-          status,
-          message: errorMessage,
-          headers: request.headers,
-        },
-      );
+      this.logger.error(`[${traceId}] ${request.method} ${request.url}`, {
+        status,
+        message: errorMessage,
+        headers: request.headers,
+      });
     } else if (status >= 400) {
       this.logger.warn(`[${traceId}] ${request.method} ${request.url} - ${status}`);
     }
 
-    response
-      .status(status)
-      .set('X-Trace-ID', traceId)
-      .json(errorResponse);
+    response.status(status).set('X-Trace-ID', traceId).json(errorResponse);
   }
 
   private generateTraceId(): string {

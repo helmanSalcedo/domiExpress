@@ -48,10 +48,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         throw new WsException('customerId and municipalityId are required');
       }
 
-      const session = await this.chatbotService.createSession(
-        data.customerId,
-        data.municipalityId,
-      );
+      const session = await this.chatbotService.createSession(data.customerId, data.municipalityId);
 
       this.connectedClients.set(client.id, {
         customerId: data.customerId,
@@ -172,9 +169,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         throw new WsException('sessionId is required');
       }
 
-      const closedSession = await this.chatbotService.closeSession(
-        data.sessionId,
-      );
+      const closedSession = await this.chatbotService.closeSession(data.sessionId);
 
       this.connectedClients.delete(client.id);
       client.leave(`chat-${data.sessionId}`);

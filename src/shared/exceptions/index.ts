@@ -1,7 +1,10 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 
 export class ValidationException extends HttpException {
-  constructor(message: string | string[], public readonly errors?: Record<string, string[]>) {
+  constructor(
+    message: string | string[],
+    public readonly errors?: Record<string, string[]>,
+  ) {
     super(
       {
         statusCode: HttpStatus.BAD_REQUEST,

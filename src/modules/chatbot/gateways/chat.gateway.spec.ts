@@ -60,10 +60,7 @@ describe('ChatGateway', () => {
 
       mockChatbotService.createSession.mockResolvedValue(mockSession);
 
-      const result = await gateway.handleStartSession(
-        mockClient as any,
-        sessionData,
-      );
+      const result = await gateway.handleStartSession(mockClient as any, sessionData);
 
       expect(result.status).toBe('success');
       expect(result.sessionId).toBe(mockSession.id);
@@ -85,9 +82,9 @@ describe('ChatGateway', () => {
         municipalityId: 'municipality-456',
       };
 
-      await expect(
-        gateway.handleStartSession(mockClient as any, sessionData),
-      ).rejects.toThrow(WsException);
+      await expect(gateway.handleStartSession(mockClient as any, sessionData)).rejects.toThrow(
+        WsException,
+      );
     });
   });
 
@@ -120,10 +117,7 @@ describe('ChatGateway', () => {
 
       mockChatbotService.processMessage.mockResolvedValue(mockResponse);
 
-      const result = await gateway.handleSendMessage(
-        mockClient as any,
-        messageData,
-      );
+      const result = await gateway.handleSendMessage(mockClient as any, messageData);
 
       expect(result.status).toBe('success');
       expect(mockClient.emit).toHaveBeenCalledWith('message_response', expect.any(Object));

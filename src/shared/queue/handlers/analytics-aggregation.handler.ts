@@ -13,14 +13,10 @@ export class AnalyticsAggregationHandler {
   private readonly logger = new Logger(AnalyticsAggregationHandler.name);
 
   @Process()
-  async handleAnalyticsAggregation(
-    job: Job<AnalyticsAggregationPayload>,
-  ): Promise<void> {
+  async handleAnalyticsAggregation(job: Job<AnalyticsAggregationPayload>): Promise<void> {
     const { municipalityId, period } = job.data;
 
-    this.logger.debug(
-      `Aggregating analytics for municipality ${municipalityId}: ${period}`,
-    );
+    this.logger.debug(`Aggregating analytics for municipality ${municipalityId}: ${period}`);
 
     try {
       job.progress(20);
@@ -43,7 +39,7 @@ export class AnalyticsAggregationHandler {
       );
 
       // Simulate processing
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       job.progress(80);
 
@@ -56,10 +52,7 @@ export class AnalyticsAggregationHandler {
         `[ANALYTICS] ${period} aggregation completed for municipality ${municipalityId}`,
       );
     } catch (error) {
-      this.logger.error(
-        `Failed to aggregate analytics for municipality ${municipalityId}`,
-        error,
-      );
+      this.logger.error(`Failed to aggregate analytics for municipality ${municipalityId}`, error);
       throw error;
     }
   }

@@ -59,7 +59,7 @@ export class DisputesService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return disputes.map((d) => this.formatDispute(d));
+    return disputes.map(d => this.formatDispute(d));
   }
 
   async listAllDisputes(
@@ -76,13 +76,10 @@ export class DisputesService {
       take,
     });
 
-    return disputes.map((d) => this.formatDispute(d));
+    return disputes.map(d => this.formatDispute(d));
   }
 
-  async resolveDispute(
-    disputeId: string,
-    dto: ResolveDisputeDto,
-  ): Promise<DisputeResponseDto> {
+  async resolveDispute(disputeId: string, dto: ResolveDisputeDto): Promise<DisputeResponseDto> {
     const dispute = await this.prisma.dispute.findUnique({
       where: { id: disputeId },
     });
@@ -113,14 +110,12 @@ export class DisputesService {
 
     const allDisputes = await this.prisma.dispute.findMany({ where });
 
-    const openDisputes = allDisputes.filter((d) => d.status === DisputeStatus.OPEN).length;
-    const resolvedDisputes = allDisputes.filter(
-      (d) => d.status === DisputeStatus.RESOLVED,
-    ).length;
-    const closedDisputes = allDisputes.filter((d) => d.status === DisputeStatus.CLOSED).length;
+    const openDisputes = allDisputes.filter(d => d.status === DisputeStatus.OPEN).length;
+    const resolvedDisputes = allDisputes.filter(d => d.status === DisputeStatus.RESOLVED).length;
+    const closedDisputes = allDisputes.filter(d => d.status === DisputeStatus.CLOSED).length;
 
     let averageResolutionTime = 0;
-    const resolvedWithTime = allDisputes.filter((d) => d.resolvedAt);
+    const resolvedWithTime = allDisputes.filter(d => d.resolvedAt);
     if (resolvedWithTime.length > 0) {
       const totalTime = resolvedWithTime.reduce((sum, d) => {
         const createdTime = d.createdAt.getTime();

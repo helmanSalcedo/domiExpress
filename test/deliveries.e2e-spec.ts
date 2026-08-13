@@ -20,7 +20,7 @@ describe('Deliveries E2E', () => {
         municipalityId: testData.municipalityId,
         customerId: testData.customerId,
         customerPhone: '+573001111111',
-        customerLocationLatitude: 4.7110,
+        customerLocationLatitude: 4.711,
         customerLocationLongitude: -74.0721,
         subtotal: 50000,
         totalAmount: 55000,
@@ -37,8 +37,8 @@ describe('Deliveries E2E', () => {
         driverId: testData.driverId,
         status: 'PENDING',
         pickupLocationLatitude: 4.7115,
-        pickupLocationLongitude: -74.0720,
-        deliveryLocationLatitude: 4.7110,
+        pickupLocationLongitude: -74.072,
+        deliveryLocationLatitude: 4.711,
         deliveryLocationLongitude: -74.0721,
         distanceKm: 0.5,
         estimatedDurationMinutes: 15,
@@ -54,9 +54,7 @@ describe('Deliveries E2E', () => {
 
   describe('Get Delivery', () => {
     it('should retrieve delivery details', async () => {
-      const response = await helper
-        .request()
-        .get(`/deliveries/${deliveryId}`);
+      const response = await helper.request().get(`/deliveries/${deliveryId}`);
 
       expect(response.status).toBe(200);
       expect(response.body.id).toBe(deliveryId);
@@ -66,9 +64,7 @@ describe('Deliveries E2E', () => {
     });
 
     it('should return 404 for non-existent delivery', async () => {
-      const response = await helper
-        .request()
-        .get('/deliveries/non-existent-id');
+      const response = await helper.request().get('/deliveries/non-existent-id');
 
       expect(response.status).toBe(404);
     });
@@ -76,12 +72,9 @@ describe('Deliveries E2E', () => {
 
   describe('Assign Delivery', () => {
     it('should assign driver to delivery', async () => {
-      const response = await helper
-        .request()
-        .patch(`/deliveries/${deliveryId}/assign`)
-        .send({
-          driverId: testData.driverId,
-        });
+      const response = await helper.request().patch(`/deliveries/${deliveryId}/assign`).send({
+        driverId: testData.driverId,
+      });
 
       expect(response.status).toBe(200);
       expect(response.body.status).toBe('ASSIGNED');
@@ -104,12 +97,9 @@ describe('Deliveries E2E', () => {
       });
 
       // Try to assign
-      const response = await helper
-        .request()
-        .patch(`/deliveries/${deliveryId}/assign`)
-        .send({
-          driverId: inactiveDriver.id,
-        });
+      const response = await helper.request().patch(`/deliveries/${deliveryId}/assign`).send({
+        driverId: inactiveDriver.id,
+      });
 
       expect(response.status).toBe(400);
       expect(response.body.message).toContain('not active');
@@ -118,14 +108,11 @@ describe('Deliveries E2E', () => {
 
   describe('Update Delivery Location', () => {
     it('should update delivery location', async () => {
-      const response = await helper
-        .request()
-        .patch(`/deliveries/${deliveryId}/location`)
-        .send({
-          latitude: 4.7112,
-          longitude: -74.0719,
-          accuracyMeters: 5,
-        });
+      const response = await helper.request().patch(`/deliveries/${deliveryId}/location`).send({
+        latitude: 4.7112,
+        longitude: -74.0719,
+        accuracyMeters: 5,
+      });
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('deliveryLatitude');
@@ -133,13 +120,10 @@ describe('Deliveries E2E', () => {
     });
 
     it('should not update with invalid coordinates', async () => {
-      const response = await helper
-        .request()
-        .patch(`/deliveries/${deliveryId}/location`)
-        .send({
-          latitude: 'invalid',
-          longitude: -74.0719,
-        });
+      const response = await helper.request().patch(`/deliveries/${deliveryId}/location`).send({
+        latitude: 'invalid',
+        longitude: -74.0719,
+      });
 
       expect(response.status).toBe(400);
     });
@@ -148,30 +132,21 @@ describe('Deliveries E2E', () => {
   describe('Complete Delivery', () => {
     it('should complete delivery', async () => {
       // First assign
-      await helper
-        .request()
-        .patch(`/deliveries/${deliveryId}/assign`)
-        .send({
-          driverId: testData.driverId,
-        });
+      await helper.request().patch(`/deliveries/${deliveryId}/assign`).send({
+        driverId: testData.driverId,
+      });
 
       // Update to in transit
-      await helper
-        .request()
-        .patch(`/deliveries/${deliveryId}/location`)
-        .send({
-          latitude: 4.7110,
-          longitude: -74.0721,
-        });
+      await helper.request().patch(`/deliveries/${deliveryId}/location`).send({
+        latitude: 4.711,
+        longitude: -74.0721,
+      });
 
       // Complete
-      const response = await helper
-        .request()
-        .patch(`/deliveries/${deliveryId}/complete`)
-        .send({
-          notes: 'Delivered successfully',
-          rating: 5,
-        });
+      const response = await helper.request().patch(`/deliveries/${deliveryId}/complete`).send({
+        notes: 'Delivered successfully',
+        rating: 5,
+      });
 
       expect(response.status).toBe(200);
       expect(response.body.status).toBe('DELIVERED');

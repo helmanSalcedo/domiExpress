@@ -1,10 +1,4 @@
-import {
-  ExceptionFilter,
-  Catch,
-  ArgumentsHost,
-  HttpStatus,
-  Logger,
-} from '@nestjs/common';
+import { ExceptionFilter, Catch, ArgumentsHost, HttpStatus, Logger } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 @Catch()
@@ -17,7 +11,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
     const traceId = (request.headers['x-trace-id'] as string) || this.generateTraceId();
 
-    let status = HttpStatus.INTERNAL_SERVER_ERROR;
+    const status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Internal server error';
     let errorType = 'InternalServerError';
 
@@ -26,29 +20,20 @@ export class AllExceptionsFilter implements ExceptionFilter {
       errorType = exception.constructor.name;
 
       // Log full stack trace for unexpected errors
-      this.logger.error(
-        `[${traceId}] Unhandled exception: ${exception.message}`,
-        exception.stack,
-      );
+      this.logger.error(`[${traceId}] Unhandled exception: ${exception.message}`, exception.stack);
     } else {
-      this.logger.error(
-        `[${traceId}] Unknown exception type`,
-        JSON.stringify(exception),
-      );
+      this.logger.error(`[${traceId}] Unknown exception type`, JSON.stringify(exception));
     }
 
-    response
-      .status(status)
-      .set('X-Trace-ID', traceId)
-      .json({
-        statusCode: status,
-        timestamp: new Date().toISOString(),
-        path: request.url,
-        method: request.method,
-        message,
-        error: errorType,
-        traceId,
-      });
+    response.status(status).set('X-Trace-ID', traceId).json({
+      statusCode: status,
+      timestamp: new Date().toISOString(),
+      path: request.url,
+      method: request.method,
+      message,
+      error: errorType,
+      traceId,
+    });
   }
 
   private generateTraceId(): string {

@@ -1,4 +1,11 @@
-import { IsString, IsPhoneNumber, IsNumber, IsOptional, MinLength, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsPhoneNumber,
+  IsNumber,
+  IsOptional,
+  MinLength,
+  MaxLength,
+} from 'class-validator';
 
 export class RegisterDriverDto {
   @IsPhoneNumber('CO')

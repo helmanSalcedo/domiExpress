@@ -46,4 +46,4 @@ export const QueueNames = {
   CLEANUP_JOBS: 'cleanup-jobs',
 } as const;
 
-export type QueueName = typeof QueueNames[keyof typeof QueueNames];
+export type QueueName = (typeof QueueNames)[keyof typeof QueueNames];

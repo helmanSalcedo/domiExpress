@@ -61,7 +61,7 @@ describe('OrdersService', () => {
       const createOrderDto: CreateOrderDto = {
         commerceId,
         items: [{ productId, quantity: 2, customizationText: 'Sin cebolla' }],
-        customerLatitude: 4.7110,
+        customerLatitude: 4.711,
         customerLongitude: -74.0076,
         notes: 'Entregar rápido',
       };
@@ -133,7 +133,7 @@ describe('OrdersService', () => {
       const createOrderDto: CreateOrderDto = {
         commerceId: 'comm-456',
         items: [{ productId: 'prod-789', quantity: 1 }],
-        customerLatitude: 4.7110,
+        customerLatitude: 4.711,
         customerLongitude: -74.0076,
       };
 
@@ -151,7 +151,7 @@ describe('OrdersService', () => {
       const createOrderDto: CreateOrderDto = {
         commerceId,
         items: [{ productId: 'prod-789', quantity: 1 }],
-        customerLatitude: 4.7110,
+        customerLatitude: 4.711,
         customerLongitude: -74.0076,
       };
 
@@ -172,7 +172,7 @@ describe('OrdersService', () => {
       const createOrderDto: CreateOrderDto = {
         commerceId,
         items: [{ productId: 'prod-789', quantity: 1 }],
-        customerLatitude: 4.7110,
+        customerLatitude: 4.711,
         customerLongitude: -74.0076,
       };
 
@@ -194,7 +194,7 @@ describe('OrdersService', () => {
       const createOrderDto: CreateOrderDto = {
         commerceId,
         items: [],
-        customerLatitude: 4.7110,
+        customerLatitude: 4.711,
         customerLongitude: -74.0076,
       };
 
@@ -263,9 +263,7 @@ describe('OrdersService', () => {
 
       mockPrismaService.order.findUnique.mockResolvedValue(mockOrder);
 
-      await expect(service.getOrder(orderId, wrongCustomerId)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(service.getOrder(orderId, wrongCustomerId)).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -359,9 +357,7 @@ describe('OrdersService', () => {
 
       mockPrismaService.order.findUnique.mockResolvedValue(mockOrder);
 
-      await expect(service.cancelOrder(orderId, customerId)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(service.cancelOrder(orderId, customerId)).rejects.toThrow(BadRequestException);
     });
   });
 

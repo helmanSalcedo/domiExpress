@@ -36,13 +36,8 @@ export class ChatbotController {
       municipalityId: string;
     },
   ): Promise<ChatSessionDto> {
-    this.logger.log(
-      `Creating new chat session for customer: ${body.customerId}`,
-    );
-    return this.chatbotService.createSession(
-      body.customerId,
-      body.municipalityId,
-    );
+    this.logger.log(`Creating new chat session for customer: ${body.customerId}`);
+    return this.chatbotService.createSession(body.customerId, body.municipalityId);
   }
 
   @Get('sessions/:sessionId')
@@ -67,10 +62,7 @@ export class ChatbotController {
   })
   async sendMessage(@Body() dto: CreateMessageDto): Promise<ChatResponseDto> {
     this.logger.log(`Processing message from customer: ${dto.customerId}`);
-    return this.chatbotService.processMessage(
-      dto.customerId,
-      dto.content,
-    );
+    return this.chatbotService.processMessage(dto.customerId, dto.content);
   }
 
   @Get('sessions/:sessionId/history')
@@ -79,9 +71,7 @@ export class ChatbotController {
     status: 200,
     description: 'Chat history retrieved successfully',
   })
-  async getHistory(
-    @Param('sessionId') sessionId: string,
-  ) {
+  async getHistory(@Param('sessionId') sessionId: string) {
     this.logger.log(`Fetching history for session: ${sessionId}`);
     return this.chatbotService.getConversationHistory(sessionId);
   }

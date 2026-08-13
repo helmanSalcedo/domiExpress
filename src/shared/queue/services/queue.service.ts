@@ -23,13 +23,8 @@ export class QueueService {
   ) {}
 
   // WhatsApp Notifications
-  async sendWhatsAppNotification(
-    payload: WhatsAppNotificationPayload,
-    delay?: number,
-  ) {
-    this.logger.debug(
-      `Queuing WhatsApp notification to ${payload.phoneNumber}`,
-    );
+  async sendWhatsAppNotification(payload: WhatsAppNotificationPayload, delay?: number) {
+    this.logger.debug(`Queuing WhatsApp notification to ${payload.phoneNumber}`);
     return this.whatsappQueue.add(payload, {
       delay,
       jobId: `whatsapp-${payload.phoneNumber}-${Date.now()}`,
@@ -46,13 +41,8 @@ export class QueueService {
   }
 
   // Delivery Tracking
-  async trackDeliveryLocation(
-    payload: DeliveryTrackingPayload,
-    delay?: number,
-  ) {
-    this.logger.debug(
-      `Queuing delivery tracking for ${payload.deliveryId}`,
-    );
+  async trackDeliveryLocation(payload: DeliveryTrackingPayload, delay?: number) {
+    this.logger.debug(`Queuing delivery tracking for ${payload.deliveryId}`);
     return this.deliveryTrackingQueue.add(payload, {
       delay,
       jobId: `tracking-${payload.deliveryId}-${Date.now()}`,
@@ -60,13 +50,8 @@ export class QueueService {
   }
 
   // Analytics Aggregation
-  async aggregateAnalytics(
-    payload: AnalyticsAggregationPayload,
-    delay?: number,
-  ) {
-    this.logger.debug(
-      `Queuing analytics aggregation for municipality ${payload.municipalityId}`,
-    );
+  async aggregateAnalytics(payload: AnalyticsAggregationPayload, delay?: number) {
+    this.logger.debug(`Queuing analytics aggregation for municipality ${payload.municipalityId}`);
     return this.analyticsQueue.add(payload, {
       delay,
       jobId: `analytics-${payload.municipalityId}-${payload.period}`,
@@ -74,9 +59,7 @@ export class QueueService {
   }
 
   // Batch operations
-  async sendWhatsAppBatch(
-    payloads: WhatsAppNotificationPayload[],
-  ): Promise<void> {
+  async sendWhatsAppBatch(payloads: WhatsAppNotificationPayload[]): Promise<void> {
     this.logger.debug(`Queuing ${payloads.length} WhatsApp notifications`);
     await this.whatsappQueue.addBulk(
       payloads.map((payload, index) => ({

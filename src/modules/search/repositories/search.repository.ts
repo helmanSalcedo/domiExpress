@@ -40,14 +40,10 @@ export class SearchRepository {
     });
   }
 
-  async searchByAttributes(
-    attributes: string[],
-    limit = 10,
-    municipalityId?: string,
-  ) {
+  async searchByAttributes(attributes: string[], limit = 10, municipalityId?: string) {
     return this.prisma.product.findMany({
       where: {
-        OR: attributes.map((attr) => ({
+        OR: attributes.map(attr => ({
           OR: [
             {
               name: {
@@ -97,9 +93,7 @@ export class SearchRepository {
       distinct: ['categoryId'],
     });
 
-    return products
-      .map((p) => p.categoryId)
-      .filter((c) => c !== null && c !== undefined) as string[];
+    return products.map(p => p.categoryId).filter(c => c !== null && c !== undefined) as string[];
   }
 
   async getPopularSearches(limit = 10): Promise<string[]> {
@@ -114,7 +108,7 @@ export class SearchRepository {
       distinct: ['query'],
     });
 
-    return searches.map((s) => s.query);
+    return searches.map(s => s.query);
   }
 
   async logSearch(query: string, municipalityId: string, resultCount: number) {

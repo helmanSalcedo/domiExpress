@@ -31,26 +31,16 @@ export class LocationTrackingService {
     };
 
     // Store in Redis with geospatial index
-    await this.redisService.geoAdd(
-      RedisKeys.DRIVERS_ACTIVE,
-      longitude,
-      latitude,
-      driverId,
-    );
+    await this.redisService.geoAdd(RedisKeys.DRIVERS_ACTIVE, longitude, latitude, driverId);
 
     // Store full location data as JSON
     const key = RedisKeys.DRIVER_LOCATION(driverId);
     await this.redisService.setJson(key, location, 3600); // 1 hour TTL
 
-    this.logger.debug(
-      `Updated location for driver ${driverId}: ${latitude}, ${longitude}`,
-    );
+    this.logger.debug(`Updated location for driver ${driverId}: ${latitude}, ${longitude}`);
 
     // Publish real-time update via Pub/Sub
-    await this.redisService.publishJson(
-      RedisKeys.DRIVER_STATUS(driverId),
-      location,
-    );
+    await this.redisService.publishJson(RedisKeys.DRIVER_STATUS(driverId), location);
 
     return location;
   }
@@ -95,10 +85,7 @@ export class LocationTrackingService {
     );
   }
 
-  async getDistanceBetweenDrivers(
-    driverId1: string,
-    driverId2: string,
-  ): Promise<number | null> {
+  async getDistanceBetweenDrivers(driverId1: string, driverId2: string): Promise<number | null> {
     const distStr = await this.redisService.geoDist(
       RedisKeys.DRIVERS_ACTIVE,
       driverId1,
@@ -128,11 +115,7 @@ export class LocationTrackingService {
   async getActiveDriversCount(): Promise<number> {
     // This is an approximation based on geospatial index
     // For exact count, would need to implement differently
-    return await this.redisService.getClient().zcount(
-      RedisKeys.DRIVERS_ACTIVE,
-      '-inf',
-      '+inf',
-    );
+    return await this.redisService.getClient().zcount(RedisKeys.DRIVERS_ACTIVE, '-inf', '+inf');
   }
 
   async trackDeliveryLocation(
@@ -151,27 +134,17 @@ export class LocationTrackingService {
     await this.redisService.setJson(key, trackingData, 3600);
 
     // Publish real-time update
-    await this.redisService.publishJson(
-      RedisKeys.DELIVERY_UPDATES(deliveryId),
-      trackingData,
-    );
+    await this.redisService.publishJson(RedisKeys.DELIVERY_UPDATES(deliveryId), trackingData);
 
     this.logger.debug(`Tracked delivery ${deliveryId} at ${latitude}, ${longitude}`);
   }
 
-  async getDeliveryTracking(
-    deliveryId: string,
-  ): Promise<Record<string, any> | null> {
+  async getDeliveryTracking(deliveryId: string): Promise<Record<string, any> | null> {
     const key = RedisKeys.DELIVERY_TRACKING(deliveryId);
     return this.redisService.getJson<Record<string, any>>(key);
   }
 
-  private calculateDistance(
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number,
-  ): number {
+  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
     const R = 6371; // Earth's radius in km
     const dLat = this.toRad(lat2 - lat1);
     const dLon = this.toRad(lon2 - lon1);

@@ -12,20 +12,19 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   // Global exception filters
-  app.useGlobalFilters(
-    new HttpExceptionFilter(),
-    new AllExceptionsFilter(),
-  );
+  app.useGlobalFilters(new HttpExceptionFilter(), new AllExceptionsFilter());
 
   // Global interceptors
   app.useGlobalInterceptors(new LoggingInterceptor());
 
   // Global validation pipe
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
 
   // CORS setup
   app.enableCors({
@@ -52,7 +51,7 @@ async function bootstrap() {
   console.log(`📚 API docs available at http://localhost:${port}/api/docs`);
 }
 
-bootstrap().catch((err) => {
+bootstrap().catch(err => {
   console.error('❌ Failed to start server:', err);
   process.exit(1);
 });

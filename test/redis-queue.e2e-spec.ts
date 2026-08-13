@@ -37,7 +37,7 @@ describe('Redis & Queue Integration E2E', () => {
       expect(await redisService.getJson(key)).toEqual(value);
 
       // Wait for TTL to expire
-      await new Promise((resolve) => setTimeout(resolve, 1100));
+      await new Promise(resolve => setTimeout(resolve, 1100));
       expect(await redisService.getJson(key)).toBeNull();
     });
 
@@ -63,12 +63,12 @@ describe('Redis & Queue Integration E2E', () => {
       const key = 'test:drivers';
 
       // Add driver locations
-      await redisService.geoAdd(key, -74.0721, 4.7110, 'driver-1');
-      await redisService.geoAdd(key, -74.0720, 4.7115, 'driver-2');
+      await redisService.geoAdd(key, -74.0721, 4.711, 'driver-1');
+      await redisService.geoAdd(key, -74.072, 4.7115, 'driver-2');
       await redisService.geoAdd(key, -74.0725, 4.7105, 'driver-3');
 
       // Find nearby drivers
-      const nearby = await redisService.geoRadius(key, -74.0721, 4.7110, 1, 'km');
+      const nearby = await redisService.geoRadius(key, -74.0721, 4.711, 1, 'km');
 
       expect(nearby.length).toBeGreaterThan(0);
       expect(nearby).toContain('driver-1');
@@ -129,10 +129,7 @@ describe('Redis & Queue Integration E2E', () => {
 
       // Check current count
       const key = RedisKeys.RATE_LIMIT(identifier);
-      const current = parseInt(
-        (await redisService.get(key)) || '0',
-        10,
-      );
+      const current = parseInt((await redisService.get(key)) || '0', 10);
       expect(current).toBe(5);
     });
   });
@@ -143,18 +140,18 @@ describe('Redis & Queue Integration E2E', () => {
       let receivedMessage: string | null = null;
 
       // Subscribe to channel
-      redisService.subscribe(channel, (msg) => {
+      redisService.subscribe(channel, msg => {
         receivedMessage = msg;
       });
 
       // Wait for subscription
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       // Publish message
       await redisService.publish(channel, 'Hello World');
 
       // Wait for delivery
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       expect(receivedMessage).toBe('Hello World');
     });
@@ -163,16 +160,16 @@ describe('Redis & Queue Integration E2E', () => {
       const channel = 'test:json:channel';
       let receivedData: any = null;
 
-      redisService.subscribe(channel, (msg) => {
+      redisService.subscribe(channel, msg => {
         receivedData = JSON.parse(msg);
       });
 
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       const testData = { orderId: '123', status: 'DELIVERED' };
       await redisService.publishJson(channel, testData);
 
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       expect(receivedData).toEqual(testData);
     });

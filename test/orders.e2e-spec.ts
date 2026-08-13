@@ -14,16 +14,13 @@ describe('Orders E2E', () => {
     testData = await helper.seedTestData();
 
     // Register and login customer
-    const registerResponse = await helper
-      .request()
-      .post('/auth/customers/register')
-      .send({
-        municipalityId: testData.municipalityId,
-        phone: '+573001234567',
-        name: 'Order Test Customer',
-        password: 'TestPassword123',
-        preferredLanguage: 'es',
-      });
+    const registerResponse = await helper.request().post('/auth/customers/register').send({
+      municipalityId: testData.municipalityId,
+      phone: '+573001234567',
+      name: 'Order Test Customer',
+      password: 'TestPassword123',
+      preferredLanguage: 'es',
+    });
 
     customerToken = registerResponse.body.accessToken;
   });
@@ -47,7 +44,7 @@ describe('Orders E2E', () => {
               price: 50000,
             },
           ],
-          customerLocationLatitude: 4.7110,
+          customerLocationLatitude: 4.711,
           customerLocationLongitude: -74.0721,
           customerPhone: '+573001234567',
           subtotal: 100000,
@@ -67,7 +64,7 @@ describe('Orders E2E', () => {
         .set('Authorization', `Bearer ${customerToken}`)
         .send({
           items: [], // Empty items
-          customerLocationLatitude: 4.7110,
+          customerLocationLatitude: 4.711,
           customerLocationLongitude: -74.0721,
           customerPhone: '+573001234567',
           subtotal: 0,
@@ -77,20 +74,23 @@ describe('Orders E2E', () => {
     });
 
     it('should not create order without authentication', async () => {
-      const response = await helper.request().post('/orders').send({
-        items: [
-          {
-            commerceId: testData.commerceId,
-            productId: 'product-123',
-            quantity: 1,
-            price: 50000,
-          },
-        ],
-        customerLocationLatitude: 4.7110,
-        customerLocationLongitude: -74.0721,
-        customerPhone: '+573001234567',
-        subtotal: 50000,
-      });
+      const response = await helper
+        .request()
+        .post('/orders')
+        .send({
+          items: [
+            {
+              commerceId: testData.commerceId,
+              productId: 'product-123',
+              quantity: 1,
+              price: 50000,
+            },
+          ],
+          customerLocationLatitude: 4.711,
+          customerLocationLongitude: -74.0721,
+          customerPhone: '+573001234567',
+          subtotal: 50000,
+        });
 
       expect(response.status).toBe(401);
     });
@@ -112,7 +112,7 @@ describe('Orders E2E', () => {
               price: 75000,
             },
           ],
-          customerLocationLatitude: 4.7110,
+          customerLocationLatitude: 4.711,
           customerLocationLongitude: -74.0721,
           customerPhone: '+573001234567',
           subtotal: 75000,
@@ -158,7 +158,7 @@ describe('Orders E2E', () => {
               price: 45000,
             },
           ],
-          customerLocationLatitude: 4.7110,
+          customerLocationLatitude: 4.711,
           customerLocationLongitude: -74.0721,
           customerPhone: '+573001234567',
           subtotal: 90000,

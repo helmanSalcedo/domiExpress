@@ -168,7 +168,7 @@ export class CommercesService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return products.map((p) => ({
+    return products.map(p => ({
       id: p.id,
       commerceId: p.commerceId,
       name: p.name,

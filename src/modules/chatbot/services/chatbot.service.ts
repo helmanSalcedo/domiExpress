@@ -32,30 +32,22 @@ export class ChatbotService {
       }
 
       // Guardar mensaje del usuario
-      const userMessage = await this.messageService.createMessage(
-        session.id,
-        'USER',
-        content,
-        { source: 'WEBSOCKET' },
-      );
+      const userMessage = await this.messageService.createMessage(session.id, 'USER', content, {
+        source: 'WEBSOCKET',
+      });
 
       // Obtener historial reciente para contexto
-      const recentMessages = await this.messageService.getRecentMessages(
-        session.id,
-        10,
-      );
+      const recentMessages = await this.messageService.getRecentMessages(session.id, 10);
 
       // Preparar mensajes para Claude
-      const claudeMessages = recentMessages.map((msg) => ({
+      const claudeMessages = recentMessages.map(msg => ({
         role: msg.role.toLowerCase() as 'user' | 'assistant',
         content: msg.content,
       }));
 
       // Procesar con Claude
       const startTime = Date.now();
-      const claudeResult = await this.claudeService.processMessage(
-        claudeMessages,
-      );
+      const claudeResult = await this.claudeService.processMessage(claudeMessages);
       const processingTime = Date.now() - startTime;
 
       // Guardar respuesta del asistente
@@ -73,9 +65,7 @@ export class ChatbotService {
       // Actualizar sesión
       await this.sessionService.updateMessageCount(session.id);
 
-      this.logger.debug(
-        `Message processed for customer ${customerId} in ${processingTime}ms`,
-      );
+      this.logger.debug(`Message processed for customer ${customerId} in ${processingTime}ms`);
 
       return {
         sessionId: session.id,
@@ -92,10 +82,7 @@ export class ChatbotService {
     }
   }
 
-  async createSession(
-    customerId: string,
-    municipalityId: string,
-  ): Promise<ChatSessionDto> {
+  async createSession(customerId: string, municipalityId: string): Promise<ChatSessionDto> {
     return this.sessionService.createSession({
       customerId,
       municipalityId,

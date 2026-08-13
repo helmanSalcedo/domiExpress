@@ -1,13 +1,4 @@
-import {
-  Controller,
-  Post,
-  Get,
-  Body,
-  Query,
-  Logger,
-  HttpCode,
-  HttpStatus,
-} from '@nestjs/common';
+import { Controller, Post, Get, Body, Query, Logger, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { ChatbotService } from '../services/chatbot.service';
 import { WhatsAppWebhookDto } from '../dto/whatsapp-webhook.dto';
@@ -65,10 +56,7 @@ export class WhatsAppWebhookController {
             const customerId = await this.mapPhoneToCustomerId(message.from);
 
             if (customerId) {
-              await this.chatbotService.processMessage(
-                customerId,
-                message.text,
-              );
+              await this.chatbotService.processMessage(customerId, message.text);
             }
           }
         }

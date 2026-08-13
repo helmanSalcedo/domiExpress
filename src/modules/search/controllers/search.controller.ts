@@ -1,21 +1,8 @@
-import {
-  Controller,
-  Post,
-  Get,
-  Body,
-  Query,
-  Param,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Post, Get, Body, Query, Param, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
 import { SearchService } from '../services/search.service';
-import {
-  SearchQueryDto,
-  SearchResultDto,
-  ProcessMessageDto,
-  SuggestionResponseDto,
-} from '../dto';
+import { SearchQueryDto, SearchResultDto, ProcessMessageDto, SuggestionResponseDto } from '../dto';
 
 @ApiTags('Search')
 @Controller('search')
@@ -46,10 +33,7 @@ export class SearchController {
     @Query('prefix') prefix: string,
     @Query('limit') limit: string = '5',
   ): Promise<SuggestionResponseDto> {
-    const suggestions = await this.searchService.getSearchSuggestions(
-      prefix,
-      parseInt(limit),
-    );
+    const suggestions = await this.searchService.getSearchSuggestions(prefix, parseInt(limit));
 
     return { suggestions };
   }

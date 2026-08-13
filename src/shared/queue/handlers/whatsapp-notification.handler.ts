@@ -26,15 +26,10 @@ export class WhatsAppNotificationHandler {
   private readonly logger = new Logger(WhatsAppNotificationHandler.name);
 
   @Process()
-  async handleWhatsAppNotification(
-    job: Job<WhatsAppNotificationPayload>,
-  ): Promise<void> {
-    const { phoneNumber, messageType, templateParams, customText, orderId } =
-      job.data;
+  async handleWhatsAppNotification(job: Job<WhatsAppNotificationPayload>): Promise<void> {
+    const { phoneNumber, messageType, templateParams, customText, orderId } = job.data;
 
-    this.logger.debug(
-      `Processing WhatsApp notification for ${phoneNumber}: ${messageType}`,
-    );
+    this.logger.debug(`Processing WhatsApp notification for ${phoneNumber}: ${messageType}`);
 
     try {
       // TODO: Integrate with Meta WhatsApp Business API
@@ -47,17 +42,14 @@ export class WhatsAppNotificationHandler {
       this.logger.debug(`Message: ${messageContent}`);
 
       // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       // TODO: Call Meta WhatsApp API
       // const response = await this.whatsappService.sendMessage(phoneNumber, messageContent);
 
       job.progress(100);
     } catch (error) {
-      this.logger.error(
-        `Failed to send WhatsApp notification to ${phoneNumber}`,
-        error,
-      );
+      this.logger.error(`Failed to send WhatsApp notification to ${phoneNumber}`, error);
       throw error;
     }
   }

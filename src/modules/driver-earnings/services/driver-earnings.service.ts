@@ -32,7 +32,7 @@ export class DriverEarningsService {
     // Rush hour bonus: 10% extra between 12-13 and 19-20 hours
     const currentHour = new Date().getHours();
     const rushHourBonus =
-      (currentHour === 12 || currentHour === 19) ? (baseFee + distanceFee) * 0.1 : 0;
+      currentHour === 12 || currentHour === 19 ? (baseFee + distanceFee) * 0.1 : 0;
 
     const bonusFee = timeBonus + rushHourBonus;
 
@@ -72,7 +72,7 @@ export class DriverEarningsService {
       take: 50,
     });
 
-    return earnings.map((e) => this.formatEarning(e));
+    return earnings.map(e => this.formatEarning(e));
   }
 
   async getEarningsHistory(driverId: string): Promise<EarningsHistoryDto> {
@@ -90,8 +90,7 @@ export class DriverEarningsService {
 
     const totalEarnings = allEarnings.reduce((sum, e) => sum + Number(e.totalAmount), 0);
     const totalDeliveries = allEarnings.length;
-    const averageEarningPerDelivery =
-      totalDeliveries > 0 ? totalEarnings / totalDeliveries : 0;
+    const averageEarningPerDelivery = totalDeliveries > 0 ? totalEarnings / totalDeliveries : 0;
 
     const currentDate = new Date();
     const currentMonthEarnings = await this.prisma.driverEarning.aggregate({

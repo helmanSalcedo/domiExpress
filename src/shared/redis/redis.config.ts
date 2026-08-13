@@ -14,7 +14,7 @@ export const createRedisClient = (): Redis => {
     enableOfflineQueue: true,
   });
 
-  redis.on('error', (err) => {
+  redis.on('error', err => {
     console.error('Redis connection error:', err);
   });
 
@@ -32,8 +32,7 @@ export const RedisKeys = {
   DRIVERS_ACTIVE: 'drivers:active:locations',
 
   // Search Cache
-  SEARCH_RESULTS: (query: string, municipality: string) =>
-    `search:${municipality}:${query}`,
+  SEARCH_RESULTS: (query: string, municipality: string) => `search:${municipality}:${query}`,
   SEARCH_TTL: 3600, // 1 hour
 
   // Session

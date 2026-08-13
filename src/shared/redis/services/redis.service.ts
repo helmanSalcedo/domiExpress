@@ -63,12 +63,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   }
 
   // Geospatial operations (for driver locations)
-  async geoAdd(
-    key: string,
-    longitude: number,
-    latitude: number,
-    member: string,
-  ): Promise<number> {
+  async geoAdd(key: string, longitude: number, latitude: number, member: string): Promise<number> {
     return this.redis.geoadd(key, longitude, latitude, member);
   }
 
@@ -144,7 +139,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       port: parseInt(process.env.REDIS_PORT || '6379', 10),
     });
 
-    subscriber.subscribe(channel, (err) => {
+    subscriber.subscribe(channel, err => {
       if (err) {
         this.logger.error(`Failed to subscribe to ${channel}:`, err);
       } else {

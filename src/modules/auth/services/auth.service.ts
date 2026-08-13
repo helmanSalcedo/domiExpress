@@ -17,7 +17,10 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async registerCustomer(dto: RegisterCustomerDto, municipalityId: string): Promise<AuthResponseDto> {
+  async registerCustomer(
+    dto: RegisterCustomerDto,
+    municipalityId: string,
+  ): Promise<AuthResponseDto> {
     const existing = await this.prisma.customer.findUnique({
       where: { phone: dto.phone },
     });
@@ -60,7 +63,10 @@ export class AuthService {
     return this.generateTokens(customer.id, 'customer');
   }
 
-  async registerCommerce(dto: RegisterCommerceDto, municipalityId: string): Promise<AuthResponseDto> {
+  async registerCommerce(
+    dto: RegisterCommerceDto,
+    municipalityId: string,
+  ): Promise<AuthResponseDto> {
     const existing = await this.prisma.commerce.findUnique({
       where: { whatsappNumber: dto.whatsappNumber },
     });

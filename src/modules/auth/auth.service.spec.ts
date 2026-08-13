@@ -80,9 +80,9 @@ describe('AuthService', () => {
         id: '123e4567-e89b-12d3-a456-426614174001',
       });
 
-      await expect(
-        service.registerCustomer(registerDto, municipalityId),
-      ).rejects.toThrow(BadRequestException);
+      await expect(service.registerCustomer(registerDto, municipalityId)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -99,9 +99,7 @@ describe('AuthService', () => {
         authToken: 'hashed_password',
       };
 
-      (prisma.customer.findUnique as jest.Mock).mockResolvedValue(
-        mockCustomer,
-      );
+      (prisma.customer.findUnique as jest.Mock).mockResolvedValue(mockCustomer);
       (jwtService.sign as jest.Mock).mockReturnValue('token123');
 
       const result = await service.loginCustomer(loginDto);
@@ -118,9 +116,7 @@ describe('AuthService', () => {
 
       (prisma.customer.findUnique as jest.Mock).mockResolvedValue(null);
 
-      await expect(service.loginCustomer(loginDto)).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(service.loginCustomer(loginDto)).rejects.toThrow(UnauthorizedException);
     });
   });
 });
