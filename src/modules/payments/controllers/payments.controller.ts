@@ -1,49 +1,77 @@
-import { Controller, Post, Get, Body, Param, UseGuards, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Param,
+  UseGuards,
+  Req,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiCreatedResponse,
+  ApiUnauthorizedResponse,
+  ApiBadRequestResponse,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
 import { PaymentsService } from '../services/payments.service';
-import { GeneratePaymentLinkDto, PaymentWebhookDto, PaymentResponseDto, RefundRequestDto } from '../dto';
+import {
+  GeneratePaymentLinkDto,
+  PaymentWebhookDto,
+  PaymentResponseDto,
+  RefundRequestDto,
+} from '../dto';
 
 @ApiTags('Payments')
 @Controller('payments')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
   @Post('link')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Generate payment link' })
-  @ApiCreatedResponse({ type: Object })
-  async generatePaymentLink(
-    @Body() dto: GeneratePaymentLinkDto,
-    @Query('customerId') customerId: string,
-  ) {
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Generate payment link for an order' })
+  @ApiCreatedResponse({ description: 'Payment link generated successfully' })
+  @ApiUnauthorizedResponse({ description: 'Invalid or missing JWT token' })
+  @ApiBadRequestResponse({ description: 'Order not found or invalid' })
+  async generatePaymentLink(@Body() dto: GeneratePaymentLinkDto, @Req() req: any) {
+    const customerId = req.user?.id;
+    if (!customerId) throw new Error('Unauthorized');
     return this.paymentsService.generatePaymentLink(customerId, dto);
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get payment status' })
-  @ApiOkResponse({ type: PaymentResponseDto })
+  @ApiOperation({ summary: 'Get payment status by ID' })
+  @ApiOkResponse({ type: PaymentResponseDto, description: 'Payment details' })
+  @ApiUnauthorizedResponse({ description: 'Invalid or missing JWT token' })
   async getPayment(@Param('id') paymentId: string): Promise<PaymentResponseDto> {
     return this.paymentsService.getPayment(paymentId);
   }
 
   @Post('webhook/wompi')
-  @ApiOperation({ summary: 'Wompi webhook endpoint' })
+  @UseGuards() // No JWT required for webhook (Wompi signature validation instead)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Wompi webhook endpoint for payment notifications' })
+  @ApiOkResponse({ description: 'Webhook processed successfully' })
   async handleWompiWebhook(@Body() dto: PaymentWebhookDto): Promise<PaymentResponseDto> {
     return this.paymentsService.processWebhook(dto);
   }
 
   @Post('refund')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Request refund' })
-  async requestRefund(
-    @Body() dto: RefundRequestDto,
-    @Query('customerId') customerId: string,
-  ) {
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Request payment refund' })
+  @ApiCreatedResponse({ description: 'Refund request created' })
+  @ApiUnauthorizedResponse({ description: 'Invalid or missing JWT token' })
+  @ApiBadRequestResponse({ description: 'Only approved payments can be refunded' })
+  async requestRefund(@Body() dto: RefundRequestDto, @Req() req: any) {
+    const customerId = req.user?.id;
+    if (!customerId) throw new Error('Unauthorized');
     return this.paymentsService.requestRefund(customerId, dto);
   }
 }

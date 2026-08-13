@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '@shared/database/prisma.service';
 import { WompiClient } from '../wompi-client/wompi.client';
 import {
@@ -11,6 +11,8 @@ import {
 
 @Injectable()
 export class PaymentsService {
+  private readonly logger = new Logger(PaymentsService.name);
+
   constructor(
     private prisma: PrismaService,
     private wompiClient: WompiClient,
@@ -20,18 +22,20 @@ export class PaymentsService {
     customerId: string,
     dto: GeneratePaymentLinkDto,
   ): Promise<{ paymentLink: string; paymentId: string }> {
+    this.logger.log(`Generating payment link for order: ${dto.orderId}, customer: ${customerId}`);
+
     const order = await this.prisma.order.findUnique({
       where: { id: dto.orderId },
-      include: {
-        customer: true,
-      },
+      include: { customer: true },
     });
 
     if (!order) {
+      this.logger.warn(`Order not found: ${dto.orderId}`);
       throw new NotFoundException('Order not found');
     }
 
     if (order.customerId !== customerId) {
+      this.logger.warn(`Unauthorized access to order: ${dto.orderId} by customer: ${customerId}`);
       throw new NotFoundException('Order not found');
     }
 
@@ -40,6 +44,7 @@ export class PaymentsService {
     });
 
     if (existingPayment) {
+      this.logger.log(`Reusing existing pending payment: ${existingPayment.id}`);
       return {
         paymentLink: existingPayment.wompiReference || '',
         paymentId: existingPayment.id,
@@ -48,9 +53,9 @@ export class PaymentsService {
 
     const { paymentLink, wompiReference } = await this.wompiClient.generatePaymentLink(
       order.reference,
-      Number(order.totalAmount) * 100, // Convert to cents
+      Number(order.totalAmount) * 100,
       order.customer.email || 'customer@domiya.local',
-      order.customer.phone,
+      order.customer.phone || '',
       order.customer.name,
       dto.returnUrl,
     );
@@ -64,10 +69,9 @@ export class PaymentsService {
       },
     });
 
-    return {
-      paymentLink,
-      paymentId: payment.id,
-    };
+    this.logger.log(`Payment link generated: ${payment.id}, Wompi ref: ${wompiReference}`);
+
+    return { paymentLink, paymentId: payment.id };
   }
 
   async getPayment(paymentId: string): Promise<PaymentResponseDto> {
@@ -91,11 +95,15 @@ export class PaymentsService {
   }
 
   async processWebhook(dto: PaymentWebhookDto): Promise<PaymentResponseDto> {
+    this.logger.log(`Processing webhook for reference: ${dto.reference}, status: ${dto.status}`);
+
     const payment = await this.prisma.payment.findFirst({
       where: { wompiReference: dto.reference },
+      include: { order: true },
     });
 
     if (!payment) {
+      this.logger.warn(`Payment not found for reference: ${dto.reference}`);
       throw new NotFoundException('Payment not found');
     }
 
@@ -104,20 +112,21 @@ export class PaymentsService {
       data: {
         status: dto.status,
         cardLastFour: dto.cardLastFour,
-        fraudStatus: dto.errorMessage || undefined,
+        fraudStatus: dto.errorMessage,
+        approvedAt: dto.status === PaymentStatus.APPROVED ? new Date() : undefined,
       },
     });
 
-    // If payment is completed, update order status
-    if (dto.status === PaymentStatus.COMPLETED) {
+    if (dto.status === PaymentStatus.APPROVED) {
+      this.logger.log(`Payment approved: ${payment.id}, updating order to CONFIRMED`);
       await this.prisma.order.update({
         where: { id: payment.orderId },
         data: { status: 'CONFIRMED' },
       });
     }
 
-    // If payment failed, update order status
-    if (dto.status === PaymentStatus.FAILED) {
+    if (dto.status === PaymentStatus.FAILED || dto.status === PaymentStatus.DECLINED) {
+      this.logger.warn(`Payment failed: ${payment.id}, status: ${dto.status}`);
       await this.prisma.order.update({
         where: { id: payment.orderId },
         data: { status: 'FAILED' },
@@ -136,6 +145,8 @@ export class PaymentsService {
   }
 
   async requestRefund(customerId: string, dto: RefundRequestDto): Promise<any> {
+    this.logger.log(`Refund requested for payment: ${dto.paymentId}, customer: ${customerId}`);
+
     const payment = await this.prisma.payment.findUnique({
       where: { id: dto.paymentId },
       include: { order: true },
@@ -146,11 +157,12 @@ export class PaymentsService {
     }
 
     if (payment.order.customerId !== customerId) {
+      this.logger.warn(`Unauthorized refund attempt for payment: ${dto.paymentId}`);
       throw new NotFoundException('Payment not found');
     }
 
-    if (payment.status !== PaymentStatus.COMPLETED) {
-      throw new BadRequestException('Only completed payments can be refunded');
+    if (payment.status !== PaymentStatus.APPROVED) {
+      throw new BadRequestException('Only approved payments can be refunded');
     }
 
     await this.wompiClient.refundTransaction(
@@ -168,6 +180,7 @@ export class PaymentsService {
       },
     });
 
+    this.logger.log(`Refund created: ${refund.id} for payment: ${payment.id}`);
     return refund;
   }
 }
