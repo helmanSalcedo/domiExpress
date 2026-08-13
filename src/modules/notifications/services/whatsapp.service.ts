@@ -1,4 +1,4 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
 
 interface NotificationEvent {
@@ -120,8 +120,6 @@ export class WhatsAppService {
     orderReference: string,
     totalAmount: number,
   ): Promise<boolean> {
-    const message = `¡Orden confirmada! 🎉\n\nReferencia: ${orderReference}\nTotal: $${totalAmount.toLocaleString('es-CO')}\n\nTu pedido está siendo preparado.`;
-
     const result = await this.sendNotification({
       type: 'PAYMENT_APPROVED',
       recipientPhone: phoneNumber,
@@ -136,16 +134,6 @@ export class WhatsAppService {
     orderReference: string,
     status: string,
   ): Promise<boolean> {
-    const statusMessages: Record<string, string> = {
-      CONFIRMED: '✅ Tu pedido fue confirmado',
-      IN_TRANSIT: '🚚 Tu pedido está en camino',
-      DELIVERED: '✅ Tu pedido ha sido entregado',
-      CANCELLED: '❌ Tu pedido ha sido cancelado',
-      FAILED: '❌ Tu pedido falló',
-    };
-
-    const message = `Actualización: ${orderReference}\n\n${statusMessages[status] || status}`;
-
     const result = await this.sendNotification({
       type: 'DELIVERY_STARTED',
       recipientPhone: phoneNumber,

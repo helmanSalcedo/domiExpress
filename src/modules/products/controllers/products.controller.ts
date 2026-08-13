@@ -10,7 +10,6 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
-  Req,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -33,14 +32,14 @@ export class ProductsController {
   @ApiBearerAuth()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new product' })
-  @ApiCreatedResponse({ type: ProductResponseDto })
+  @ApiCreatedResponse({ description: 'Product created' })
   async createProduct(@Body() dto: CreateProductDto): Promise<ProductResponseDto> {
     return this.productsService.createProduct(dto);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get product by ID' })
-  @ApiOkResponse({ type: ProductResponseDto })
+  @ApiOkResponse({ description: 'Success' })
   @ApiNotFoundResponse({ description: 'Product not found' })
   async getProduct(@Param('id') productId: string): Promise<ProductResponseDto> {
     return this.productsService.getProduct(productId);
@@ -48,7 +47,7 @@ export class ProductsController {
 
   @Get('commerce/:commerceId')
   @ApiOperation({ summary: 'Get all products for a commerce' })
-  @ApiOkResponse({ type: [ProductResponseDto] })
+  @ApiOkResponse({ description: 'List of products' })
   async getCommerceProducts(
     @Param('commerceId') commerceId: string,
     @Query('category') category?: string,
@@ -62,7 +61,7 @@ export class ProductsController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update product' })
-  @ApiOkResponse({ type: ProductResponseDto })
+  @ApiOkResponse({ description: 'Success' })
   @ApiNotFoundResponse({ description: 'Product not found' })
   async updateProduct(
     @Param('id') productId: string,
@@ -85,7 +84,7 @@ export class ProductsController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Toggle product availability' })
-  @ApiOkResponse({ type: ProductResponseDto })
+  @ApiOkResponse({ description: 'Success' })
   async toggleAvailability(
     @Param('id') productId: string,
     @Body() body: { available: boolean },
@@ -95,7 +94,7 @@ export class ProductsController {
 
   @Get('commerce/:commerceId/category/:category')
   @ApiOperation({ summary: 'Get products by category' })
-  @ApiOkResponse({ type: [ProductResponseDto] })
+  @ApiOkResponse({ description: 'List of products' })
   async getProductsByCategory(
     @Param('commerceId') commerceId: string,
     @Param('category') category: string,
@@ -105,7 +104,7 @@ export class ProductsController {
 
   @Get('commerce/:commerceId/search')
   @ApiOperation({ summary: 'Search products' })
-  @ApiOkResponse({ type: [ProductResponseDto] })
+  @ApiOkResponse({ description: 'List of products' })
   async searchProducts(
     @Param('commerceId') commerceId: string,
     @Query('q') query: string,

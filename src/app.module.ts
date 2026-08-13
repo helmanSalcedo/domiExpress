@@ -31,10 +31,16 @@ import { ChatbotModule } from './modules/chatbot/chatbot.module';
     }),
     ThrottlerModule.forRoot([
       {
-        ttl: 60000, // 1 minute
-        limit: 100, // 100 requests per minute (default)
+        name: 'short',
+        ttl: 1000,
+        limit: 3,
       },
-    ]),
+      {
+        name: 'long',
+        ttl: 60000,
+        limit: 100,
+      },
+    ] as any),
     BullModule.forRoot({
       redis: {
         host: process.env.REDIS_HOST || 'localhost',

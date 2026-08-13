@@ -6,18 +6,17 @@ export interface CreateProductDto {
   name: string;
   description?: string;
   basePrice: number;
-  category: string;
+  categoryId?: string;
   imageUrl?: string;
-  available: boolean;
 }
 
 export interface UpdateProductDto {
   name?: string;
   description?: string;
   basePrice?: number;
-  category?: string;
+  categoryId?: string;
   imageUrl?: string;
-  available?: boolean;
+  isActive?: boolean;
 }
 
 export interface ProductResponseDto {
@@ -26,9 +25,9 @@ export interface ProductResponseDto {
   name: string;
   description?: string;
   basePrice: number;
-  category: string;
+  categoryId?: string;
   imageUrl?: string;
-  available: boolean;
+  isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -40,7 +39,7 @@ export class ProductsService {
   constructor(private prisma: PrismaService) {}
 
   async createProduct(dto: CreateProductDto): Promise<ProductResponseDto> {
-    this.logger.log(`📦 Creating product: ${dto.name} for commerce: ${dto.commerceId}`);
+    this.logger.log(`📦 Creating product: ${dto.name}`);
 
     if (dto.basePrice < 0) {
       throw new BadRequestException('Price cannot be negative');
@@ -50,7 +49,6 @@ export class ProductsService {
       throw new BadRequestException('Product name is required');
     }
 
-    // Validate commerce exists
     const commerce = await this.prisma.commerce.findUnique({
       where: { id: dto.commerceId },
     });
@@ -65,9 +63,9 @@ export class ProductsService {
         name: dto.name,
         description: dto.description,
         basePrice: dto.basePrice,
-        category: dto.category,
+        categoryId: dto.categoryId,
         imageUrl: dto.imageUrl,
-        available: dto.available !== undefined ? dto.available : true,
+        isActive: true,
       },
     });
 
@@ -89,15 +87,15 @@ export class ProductsService {
 
   async getCommerceProducts(
     commerceId: string,
-    category?: string,
+    categoryId?: string,
     limit = 50,
     offset = 0,
   ): Promise<ProductResponseDto[]> {
     this.logger.debug(`Fetching products for commerce: ${commerceId}`);
 
-    const where: any = { commerceId };
-    if (category) {
-      where.category = category;
+    const where: any = { commerceId, isActive: true };
+    if (categoryId) {
+      where.categoryId = categoryId;
     }
 
     const products = await this.prisma.product.findMany({
@@ -113,7 +111,6 @@ export class ProductsService {
   async updateProduct(productId: string, dto: UpdateProductDto): Promise<ProductResponseDto> {
     this.logger.log(`📝 Updating product: ${productId}`);
 
-    // Validate product exists
     const product = await this.prisma.product.findUnique({
       where: { id: productId },
     });
@@ -129,12 +126,12 @@ export class ProductsService {
     const updated = await this.prisma.product.update({
       where: { id: productId },
       data: {
-        name: dto.name,
-        description: dto.description,
-        basePrice: dto.basePrice,
-        category: dto.category,
-        imageUrl: dto.imageUrl,
-        available: dto.available,
+        ...(dto.name && { name: dto.name }),
+        ...(dto.description && { description: dto.description }),
+        ...(dto.basePrice && { basePrice: dto.basePrice }),
+        ...(dto.categoryId && { categoryId: dto.categoryId }),
+        ...(dto.imageUrl && { imageUrl: dto.imageUrl }),
+        ...(dto.isActive !== undefined && { isActive: dto.isActive }),
       },
     });
 
@@ -153,16 +150,15 @@ export class ProductsService {
       throw new NotFoundException('Product not found');
     }
 
-    await this.prisma.product.delete({
+    await this.prisma.product.update({
       where: { id: productId },
+      data: { isActive: false },
     });
 
-    this.logger.log(`✅ Product deleted: ${productId}`);
+    this.logger.log(`✅ Product soft deleted: ${productId}`);
   }
 
-  async toggleAvailability(productId: string, available: boolean): Promise<ProductResponseDto> {
-    this.logger.log(`🔄 Toggling availability for product: ${productId} to ${available}`);
-
+  async toggleAvailability(productId: string, isActive: boolean): Promise<ProductResponseDto> {
     const product = await this.prisma.product.findUnique({
       where: { id: productId },
     });
@@ -173,22 +169,22 @@ export class ProductsService {
 
     const updated = await this.prisma.product.update({
       where: { id: productId },
-      data: { available },
+      data: { isActive },
     });
 
-    this.logger.log(`✅ Availability toggled: ${productId}`);
+    this.logger.log(`✅ Product ${isActive ? 'activated' : 'deactivated'}: ${productId}`);
     return this.formatProduct(updated);
   }
 
   async getProductsByCategory(
     commerceId: string,
-    category: string,
+    categoryId: string,
   ): Promise<ProductResponseDto[]> {
     const products = await this.prisma.product.findMany({
       where: {
         commerceId,
-        category,
-        available: true,
+        categoryId,
+        isActive: true,
       },
       orderBy: { basePrice: 'asc' },
     });
@@ -205,11 +201,11 @@ export class ProductsService {
     const products = await this.prisma.product.findMany({
       where: {
         commerceId,
+        isActive: true,
         OR: [
           { name: { contains: query, mode: 'insensitive' } },
           { description: { contains: query, mode: 'insensitive' } },
         ],
-        available: true,
       },
       take: 20,
     });
@@ -217,40 +213,23 @@ export class ProductsService {
     return products.map((p) => this.formatProduct(p));
   }
 
-  async getCommerceProductStats(commerceId: string): Promise<{
-    totalProducts: number;
-    availableProducts: number;
-    unavailableProducts: number;
-    averagePrice: number;
-    categories: { name: string; count: number }[];
-  }> {
+  async getCommerceProductStats(commerceId: string) {
     const products = await this.prisma.product.findMany({
       where: { commerceId },
     });
 
     const total = products.length;
-    const available = products.filter((p) => p.available).length;
-    const unavailable = total - available;
+    const active = products.filter((p) => p.isActive).length;
+    const inactive = total - active;
     const avgPrice = products.length > 0
       ? products.reduce((sum, p) => sum + Number(p.basePrice), 0) / products.length
       : 0;
 
-    const categoryMap = new Map<string, number>();
-    products.forEach((p) => {
-      categoryMap.set(p.category, (categoryMap.get(p.category) || 0) + 1);
-    });
-
-    const categories = Array.from(categoryMap.entries()).map(([name, count]) => ({
-      name,
-      count,
-    }));
-
     return {
       totalProducts: total,
-      availableProducts: available,
-      unavailableProducts: unavailable,
+      activeProducts: active,
+      inactiveProducts: inactive,
       averagePrice: Math.round(avgPrice * 100) / 100,
-      categories,
     };
   }
 
@@ -261,9 +240,9 @@ export class ProductsService {
       name: product.name,
       description: product.description,
       basePrice: Number(product.basePrice),
-      category: product.category,
+      categoryId: product.categoryId,
       imageUrl: product.imageUrl,
-      available: product.available,
+      isActive: product.isActive,
       createdAt: product.createdAt,
       updatedAt: product.updatedAt,
     };

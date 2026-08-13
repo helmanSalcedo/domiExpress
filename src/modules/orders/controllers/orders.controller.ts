@@ -22,7 +22,6 @@ import {
   ApiBadRequestResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
 import { OrdersService } from '../services/orders.service';
 import { CreateOrderDto, UpdateOrderStatusDto, OrderResponseDto } from '../dto';
@@ -36,7 +35,6 @@ export class OrdersController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @Throttle({ default: { limit: 10, ttl: 60000 } }) // 10 requests per minute
   @ApiOperation({ summary: 'Create new order' })
   @ApiCreatedResponse({ type: OrderResponseDto, description: 'Order created successfully' })
   @ApiBadRequestResponse({ description: 'Invalid input or business rule violation' })
@@ -50,7 +48,6 @@ export class OrdersController {
   }
 
   @Get(':id')
-  @Throttle({ default: { limit: 30, ttl: 60000 } }) // 30 requests per minute
   @ApiOperation({ summary: 'Get order by ID' })
   @ApiOkResponse({ type: OrderResponseDto, description: 'Order details' })
   @ApiNotFoundResponse({ description: 'Order not found' })
@@ -62,7 +59,6 @@ export class OrdersController {
 
   @Patch(':id/status')
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { limit: 20, ttl: 60000 } }) // 20 requests per minute
   @ApiOperation({ summary: 'Update order status' })
   @ApiOkResponse({ type: OrderResponseDto, description: 'Order status updated' })
   @ApiNotFoundResponse({ description: 'Order not found' })
@@ -76,16 +72,15 @@ export class OrdersController {
   }
 
   @Get()
-  @Throttle({ default: { limit: 30, ttl: 60000 } }) // 30 requests per minute
   @ApiOperation({ summary: 'List orders with pagination' })
   @ApiOkResponse({ type: [OrderResponseDto], description: 'List of orders' })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   async listOrders(
+    @Req() req: any,
     @Query('customerId') customerId?: string,
     @Query('commerceId') commerceId?: string,
     @Query('limit') limit: string = '20',
     @Query('offset') offset: string = '0',
-    @Req() req: any,
   ) {
     const limitNum = Math.min(parseInt(limit), 100);
     const offsetNum = parseInt(offset);
@@ -108,7 +103,6 @@ export class OrdersController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { limit: 10, ttl: 60000 } }) // 10 requests per minute
   @ApiOperation({ summary: 'Cancel order' })
   @ApiOkResponse({ description: 'Order cancelled successfully' })
   @ApiNotFoundResponse({ description: 'Order not found' })
