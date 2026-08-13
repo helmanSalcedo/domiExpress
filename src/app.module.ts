@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { HealthModule } from './modules/health/health.module';
 import { SharedModule } from './shared/shared.module';
 import { RedisModule } from './shared/redis/redis.module';
@@ -28,6 +29,12 @@ import { ChatbotModule } from './modules/chatbot/chatbot.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,        // 1 minute
+        limit: 100,        // 100 requests per minute (default)
+      },
+    ]),
     BullModule.forRoot({
       redis: {
         host: process.env.REDIS_HOST || 'localhost',

@@ -8,8 +8,21 @@ import {
   Param,
   Query,
   UseGuards,
+  Req,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiBadRequestResponse,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
 import { OrdersService } from '../services/orders.service';
 import { CreateOrderDto, UpdateOrderStatusDto, OrderResponseDto } from '../dto';
@@ -22,25 +35,45 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
+  @HttpCode(HttpStatus.CREATED)
+  @Throttle({ default: { limit: 10, ttl: 60000 } }) // 10 requests per minute
   @ApiOperation({ summary: 'Create new order' })
-  @ApiCreatedResponse({ type: OrderResponseDto })
-  async createOrder(@Body() dto: CreateOrderDto, @Query('customerId') customerId: string): Promise<OrderResponseDto> {
+  @ApiCreatedResponse({ type: OrderResponseDto, description: 'Order created successfully' })
+  @ApiBadRequestResponse({ description: 'Invalid input or business rule violation' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized - JWT token invalid or missing' })
+  async createOrder(
+    @Body() dto: CreateOrderDto,
+    @Req() req: any,
+  ): Promise<OrderResponseDto> {
+    const customerId = req.user?.id;
+    if (!customerId) {
+      throw new Error('Customer ID not found in JWT token');
+    }
     return this.ordersService.createOrder(customerId, dto);
   }
 
   @Get(':id')
+  @Throttle({ default: { limit: 30, ttl: 60000 } }) // 30 requests per minute
   @ApiOperation({ summary: 'Get order by ID' })
-  @ApiOkResponse({ type: OrderResponseDto })
+  @ApiOkResponse({ type: OrderResponseDto, description: 'Order details' })
+  @ApiNotFoundResponse({ description: 'Order not found' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized - JWT token invalid or missing' })
   async getOrder(
     @Param('id') orderId: string,
-    @Query('customerId') customerId?: string,
+    @Req() req: any,
   ): Promise<OrderResponseDto> {
+    const customerId = req.user?.id;
     return this.ordersService.getOrder(orderId, customerId);
   }
 
   @Patch(':id/status')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 20, ttl: 60000 } }) // 20 requests per minute
   @ApiOperation({ summary: 'Update order status' })
-  @ApiOkResponse({ type: OrderResponseDto })
+  @ApiOkResponse({ type: OrderResponseDto, description: 'Order status updated' })
+  @ApiNotFoundResponse({ description: 'Order not found' })
+  @ApiBadRequestResponse({ description: 'Invalid status transition' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   async updateStatus(
     @Param('id') orderId: string,
     @Body() dto: UpdateOrderStatusDto,
@@ -49,19 +82,31 @@ export class OrdersController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'List orders' })
-  @ApiOkResponse({ type: [OrderResponseDto] })
+  @Throttle({ default: { limit: 30, ttl: 60000 } }) // 30 requests per minute
+  @ApiOperation({ summary: 'List orders with pagination' })
+  @ApiOkResponse({ type: [OrderResponseDto], description: 'List of orders' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   async listOrders(
     @Query('customerId') customerId?: string,
     @Query('commerceId') commerceId?: string,
     @Query('limit') limit: string = '20',
     @Query('offset') offset: string = '0',
+    @Req() req: any,
   ) {
     const limitNum = Math.min(parseInt(limit), 100);
     const offsetNum = parseInt(offset);
 
-    if (customerId) {
-      return this.ordersService.listCustomerOrders(customerId, limitNum, offsetNum);
+    // If listing customer orders, ensure it's the same customer
+    if (customerId && req.user?.id && customerId !== req.user.id) {
+      throw new Error('Unauthorized - can only list your own orders');
+    }
+
+    if (customerId || req.user?.id) {
+      return this.ordersService.listCustomerOrders(
+        customerId || req.user.id,
+        limitNum,
+        offsetNum,
+      );
     }
 
     if (commerceId) {
@@ -72,11 +117,21 @@ export class OrdersController {
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 10, ttl: 60000 } }) // 10 requests per minute
   @ApiOperation({ summary: 'Cancel order' })
+  @ApiOkResponse({ description: 'Order cancelled successfully' })
+  @ApiNotFoundResponse({ description: 'Order not found' })
+  @ApiBadRequestResponse({ description: 'Cannot cancel order in current status' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   async cancelOrder(
     @Param('id') orderId: string,
-    @Query('customerId') customerId: string,
+    @Req() req: any,
   ): Promise<void> {
+    const customerId = req.user?.id;
+    if (!customerId) {
+      throw new Error('Customer ID not found in JWT token');
+    }
     await this.ordersService.cancelOrder(orderId, customerId);
   }
 }

@@ -1,11 +1,11 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '@shared/database/prisma.service';
 import {
   DailyMetricsDto,
+  GrowthMetricsDto,
   PeriodStatsDto,
   RevenueBreakdownDto,
   TopPerformersDto,
-  GrowthMetricsDto,
 } from '../dto/index';
 
 @Injectable()
@@ -69,7 +69,11 @@ export class AnalyticsService {
     };
   }
 
-  async getPeriodStats(startDate: Date, endDate: Date, municipalityId?: string): Promise<PeriodStatsDto> {
+  async getPeriodStats(
+    startDate: Date,
+    endDate: Date,
+    municipalityId?: string,
+  ): Promise<PeriodStatsDto> {
     if (startDate > endDate) {
       throw new BadRequestException('Start date must be before end date');
     }
@@ -96,13 +100,16 @@ export class AnalyticsService {
     });
 
     const totalDeliveries = deliveries.length;
-    const completedDeliveries = deliveries.filter((d) => d.completedAt).length;
-    const failedDeliveries = deliveries.filter((d) => d.status === 'FAILED').length;
+    const completedDeliveries = deliveries.filter(d => d.completedAt).length;
+    const failedDeliveries = deliveries.filter(d => d.status === 'FAILED').length;
 
     let averageDeliveryTime = 0;
-    const completedWithTime = deliveries.filter((d) => d.actualDurationMinutes);
+    const completedWithTime = deliveries.filter(d => d.actualDurationMinutes);
     if (completedWithTime.length > 0) {
-      const totalTime = completedWithTime.reduce((sum, d) => sum + (d.actualDurationMinutes || 0), 0);
+      const totalTime = completedWithTime.reduce(
+        (sum, d) => sum + (d.actualDurationMinutes || 0),
+        0,
+      );
       averageDeliveryTime = totalTime / completedWithTime.length;
     }
 
@@ -149,7 +156,11 @@ export class AnalyticsService {
     };
   }
 
-  async getRevenueBreakdown(startDate: Date, endDate: Date, municipalityId?: string): Promise<RevenueBreakdownDto> {
+  async getRevenueBreakdown(
+    startDate: Date,
+    endDate: Date,
+    municipalityId?: string,
+  ): Promise<RevenueBreakdownDto> {
     const whereClause = municipalityId
       ? { municipalityId, createdAt: { gte: startDate, lte: endDate } }
       : { createdAt: { gte: startDate, lte: endDate } };
@@ -172,10 +183,7 @@ export class AnalyticsService {
     };
   }
 
-  async getTopPerformers(
-    limit = 10,
-    municipalityId?: string,
-  ): Promise<TopPerformersDto> {
+  async getTopPerformers(limit = 10, municipalityId?: string): Promise<TopPerformersDto> {
     const commerceWhere = municipalityId ? { municipalityId } : {};
     const topCommerces = await this.prisma.commerce.findMany({
       where: commerceWhere,
@@ -184,7 +192,7 @@ export class AnalyticsService {
     });
 
     const commercesWithStats = await Promise.all(
-      topCommerces.map(async (c) => {
+      topCommerces.map(async c => {
         const orders = await this.prisma.order.count({
           where: { commerces: { some: { id: c.id } } },
         });
@@ -212,7 +220,7 @@ export class AnalyticsService {
     });
 
     const driversWithStats = await Promise.all(
-      topDrivers.map(async (d) => {
+      topDrivers.map(async d => {
         const deliveries = await this.prisma.delivery.count({
           where: { driverId: d.id },
         });
@@ -241,8 +249,16 @@ export class AnalyticsService {
     currentPeriodEnd: Date,
     municipalityId?: string,
   ): Promise<GrowthMetricsDto> {
-    const previousStats = await this.getPeriodStats(previousPeriodStart, previousPeriodEnd, municipalityId);
-    const currentStats = await this.getPeriodStats(currentPeriodStart, currentPeriodEnd, municipalityId);
+    const previousStats = await this.getPeriodStats(
+      previousPeriodStart,
+      previousPeriodEnd,
+      municipalityId,
+    );
+    const currentStats = await this.getPeriodStats(
+      currentPeriodStart,
+      currentPeriodEnd,
+      municipalityId,
+    );
 
     const calculateGrowth = (current: number, previous: number): number => {
       if (previous === 0) return current > 0 ? 100 : 0;
@@ -252,8 +268,14 @@ export class AnalyticsService {
     return {
       ordersGrowthPercent: calculateGrowth(currentStats.totalOrders, previousStats.totalOrders),
       revenueGrowthPercent: calculateGrowth(currentStats.totalRevenue, previousStats.totalRevenue),
-      customersGrowthPercent: calculateGrowth(currentStats.newCustomers, previousStats.newCustomers),
-      commercesGrowthPercent: calculateGrowth(currentStats.newCommerces, previousStats.newCommerces),
+      customersGrowthPercent: calculateGrowth(
+        currentStats.newCustomers,
+        previousStats.newCustomers,
+      ),
+      commercesGrowthPercent: calculateGrowth(
+        currentStats.newCommerces,
+        previousStats.newCommerces,
+      ),
       driversGrowthPercent: calculateGrowth(currentStats.newDrivers, previousStats.newDrivers),
       deliveryTimeImprovement: previousStats.averageDeliveryTime - currentStats.averageDeliveryTime,
     };

@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@shared/database/prisma.service';
-import { CreateOrderDto, OrderStatus, UpdateOrderStatusDto, OrderResponseDto } from '../dto';
+import { CreateOrderDto, OrderResponseDto, OrderStatus, UpdateOrderStatusDto } from '../dto';
 import { OrderStateMachine } from '../state-machine/order.state-machine';
 
 interface OrderCalculations {
@@ -52,7 +52,7 @@ export class OrdersService {
 
     // Validar productos y calcular subtotal
     const orderItems = await Promise.all(
-      dto.items.map(async (item) => {
+      dto.items.map(async item => {
         const product = await this.prisma.product.findUnique({
           where: { id: item.productId },
         });
@@ -65,12 +65,13 @@ export class OrdersService {
           throw new BadRequestException(`Product ${product.name} is out of stock`);
         }
 
+        const unitPrice = Number(product.basePrice);
         return {
           commerceId: dto.commerceId,
           productId: item.productId,
           quantity: item.quantity,
-          unitPrice: product.basePrice,
-          subtotal: product.basePrice * item.quantity,
+          unitPrice,
+          subtotal: unitPrice * item.quantity,
           customizationText: item.customizationText,
           customizationExtraCost: 0,
         };
@@ -113,12 +114,7 @@ export class OrdersService {
     this.logger.log(`Order created: ${order.reference} with total: ${calculations.total}`);
 
     // Registrar estado inicial
-    await this.recordOrderStateChange(
-      order.id,
-      null,
-      OrderStatus.PENDING,
-      'Order created',
-    );
+    await this.recordOrderStateChange(order.id, null, OrderStatus.PENDING, 'Order created');
 
     return this.mapToResponseDto(order);
   }
@@ -150,10 +146,7 @@ export class OrdersService {
     return this.mapToDetailedResponseDto(order);
   }
 
-  async updateOrderStatus(
-    orderId: string,
-    dto: UpdateOrderStatusDto,
-  ): Promise<OrderResponseDto> {
+  async updateOrderStatus(orderId: string, dto: UpdateOrderStatusDto): Promise<OrderResponseDto> {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
       include: { items: true },
@@ -212,7 +205,7 @@ export class OrdersService {
       include: { items: true, customer: true },
     });
 
-    return orders.map((order) => this.mapToResponseDto(order));
+    return orders.map(order => this.mapToResponseDto(order));
   }
 
   async listCommerceOrders(
@@ -228,7 +221,7 @@ export class OrdersService {
         take: limit,
         skip: offset,
       })
-    ).map((oi) => oi.orderId);
+    ).map(oi => oi.orderId);
 
     const orders = await this.prisma.order.findMany({
       where: { id: { in: orderIds } },
@@ -236,7 +229,7 @@ export class OrdersService {
       include: { items: true, customer: true },
     });
 
-    return orders.map((order) => this.mapToResponseDto(order));
+    return orders.map(order => this.mapToResponseDto(order));
   }
 
   async getOrdersByStatus(
@@ -252,7 +245,7 @@ export class OrdersService {
       include: { items: true, customer: true },
     });
 
-    return orders.map((order) => this.mapToResponseDto(order));
+    return orders.map(order => this.mapToResponseDto(order));
   }
 
   async cancelOrder(orderId: string, customerId: string): Promise<OrderResponseDto> {
@@ -370,16 +363,20 @@ export class OrdersService {
         subtotal: Number(item.subtotal),
         customizationText: item.customizationText,
       })),
-      payment: order.payment ? {
-        id: order.payment.id,
-        status: order.payment.status,
-        method: order.payment.paymentMethod,
-      } : null,
-      delivery: order.delivery ? {
-        id: order.delivery.id,
-        status: order.delivery.status,
-        driverId: order.delivery.driverId,
-      } : null,
+      payment: order.payment
+        ? {
+            id: order.payment.id,
+            status: order.payment.status,
+            method: order.payment.paymentMethod,
+          }
+        : null,
+      delivery: order.delivery
+        ? {
+            id: order.delivery.id,
+            status: order.delivery.status,
+            driverId: order.delivery.driverId,
+          }
+        : null,
       createdAt: order.createdAt,
       confirmedAt: order.confirmedAt,
       completedAt: order.completedAt,

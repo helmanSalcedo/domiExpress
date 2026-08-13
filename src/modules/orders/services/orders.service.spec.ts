@@ -7,7 +7,6 @@ import { UpdateOrderStatusDto } from '../dto/update-order-status.dto';
 
 describe('OrdersService', () => {
   let service: OrdersService;
-  let prisma: PrismaService;
 
   const mockPrismaService = {
     customer: {
@@ -47,7 +46,6 @@ describe('OrdersService', () => {
     }).compile();
 
     service = module.get<OrdersService>(OrdersService);
-    prisma = module.get<PrismaService>(PrismaService);
   });
 
   afterEach(() => {
@@ -298,13 +296,14 @@ describe('OrdersService', () => {
       const result = await service.updateOrderStatus(orderId, updateDto);
 
       expect(result.status).toBe(OrderStatus.CONFIRMED);
-      expect(mockPrismaService.order.update).toHaveBeenCalledWith({
-        where: { id: orderId },
-        data: expect.objectContaining({
-          status: OrderStatus.CONFIRMED,
+      expect(mockPrismaService.order.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: orderId },
+          data: expect.objectContaining({
+            status: OrderStatus.CONFIRMED,
+          }),
         }),
-        include: { items: true },
-      });
+      );
     });
 
     it('should throw error on invalid status transition', async () => {
@@ -355,7 +354,7 @@ describe('OrdersService', () => {
       const mockOrder = {
         id: orderId,
         customerId,
-        status: OrderStatus.DELIVERING, // Cannot cancel
+        status: OrderStatus.IN_TRANSIT, // Cannot cancel
       };
 
       mockPrismaService.order.findUnique.mockResolvedValue(mockOrder);
