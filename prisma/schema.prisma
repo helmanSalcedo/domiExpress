@@ -11,6 +11,9 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// Enable preview features for PostgreSQL fulltext search
+// This will be needed for full-text indexing support in future phases
+
 // ============================================================================
 // MUNICIPALITIES (Municipios)
 // ============================================================================
@@ -29,7 +32,7 @@ model Municipality {
   currency                  String   @default("COP") @db.VarChar(3)
   whatsappNumber            String?  @db.VarChar(20)
   whatsappNumberId          String?  @db.VarChar(255) @unique
-  commissionPercentage      Decimal  @default(10.00) @db.Numeric(5, 2)
+  commissionPercentage      Decimal  @default(10.00) @db.Decimal(5, 2)
   status                    String   @default("ACTIVE") @db.VarChar(50) // ACTIVE, PAUSED, CLOSED
   isPublished               Boolean  @default(false)
   activeCommerces           Int      @default(0)
@@ -51,7 +54,7 @@ model Municipality {
   @@index([status])
   @@index([isPublished])
   @@index([countryCode])
-  @@fulltext([name])
+  // @@fulltext([name]) - requires fullTextIndex preview feature
 }
 
 // ============================================================================
@@ -67,7 +70,7 @@ model Customer {
   preferredLanguage         String   @default("es") @db.VarChar(5)
   homeLatitude              Float?
   homeLongitude             Float?
-  rating                    Decimal  @default(5.0) @db.Numeric(2, 1)
+  rating                    Decimal  @default(5.0) @db.Decimal(2, 1)
   totalOrders               Int      @default(0)
   firstOrderAt              DateTime? @db.Timestamptz()
   lastOrderAt               DateTime? @db.Timestamptz()
@@ -88,12 +91,13 @@ model Customer {
   orders                    Order[]
   addresses                 CustomerAddress[]
   ratings                   Rating[]
+  chatSessions              ChatSession[]
 
   @@index([municipalityId])
   @@index([status])
   @@index([rating])
   @@index([createdAt])
-  @@fulltext([name])
+  // @@fulltext([name]) - requires fullTextIndex preview feature
 }
 
 model CustomerAddress {
@@ -138,7 +142,7 @@ model Commerce {
   ownerEmail                String   @db.VarChar(255)
   logoUrl                   String?  @db.VarChar(2048)
   heroImageUrl              String?  @db.VarChar(2048)
-  rating                    Decimal  @default(5.0) @db.Numeric(2, 1)
+  rating                    Decimal  @default(5.0) @db.Decimal(2, 1)
   totalReviews              Int      @default(0)
   totalOrders               Int      @default(0)
   totalRevenue              Decimal  @default(0) @db.Decimal(15, 2)
@@ -176,7 +180,7 @@ model Commerce {
   @@index([isActive])
   @@index([isVerified])
   @@index([rating])
-  @@fulltext([name, description])
+  // @@fulltext([name, description]) - requires fullTextIndex preview feature
 }
 
 // ============================================================================
@@ -203,7 +207,7 @@ model Product {
   isVegan                   Boolean  @default(false)
   isVegetarian              Boolean  @default(false)
   isSpicy                   Boolean  @default(false)
-  rating                    Decimal  @default(5.0) @db.Numeric(2, 1)
+  rating                    Decimal  @default(5.0) @db.Decimal(2, 1)
   totalReviews              Int      @default(0)
   totalSold                 Int      @default(0)
   embedding                 Unsupported("vector(384)")?
@@ -220,7 +224,7 @@ model Product {
   @@index([commerceId])
   @@index([stockStatus])
   @@index([isActive])
-  @@fulltext([name, description])
+  // @@fulltext([name, description]) - requires fullTextIndex preview feature
 }
 
 model Category {
@@ -340,7 +344,7 @@ model Payment {
   customerEmail             String?  @db.VarChar(255)
   cardLastFour              String?  @db.VarChar(4)
   cardBrand                 String?  @db.VarChar(50) // VISA, MASTERCARD
-  fraudScore                Decimal? @db.Numeric(3, 1)
+  fraudScore                Decimal? @db.Decimal(3, 1)
   fraudStatus               String?  @db.VarChar(50) // APPROVED, SUSPICIOUS, BLOCKED
   createdAt                 DateTime @default(now()) @db.Timestamptz()
   updatedAt                 DateTime @updatedAt @db.Timestamptz()
@@ -395,7 +399,7 @@ model Driver {
   insuranceExpiryDate       DateTime? @db.Date
   bankAccountNumber         String?  @db.VarChar(50)
   bankAccountHolder         String?  @db.VarChar(255)
-  rating                    Decimal  @default(5.0) @db.Numeric(2, 1)
+  rating                    Decimal  @default(5.0) @db.Decimal(2, 1)
   totalDeliveries           Int      @default(0)
   isActive                  Boolean  @default(true)
   isVerified                Boolean  @default(false)
@@ -420,7 +424,7 @@ model Driver {
   @@index([isActive])
   @@index([isVerified])
   @@index([rating])
-  @@fulltext([fullName])
+  // @@fulltext([fullName]) - requires fullTextIndex preview feature
 }
 
 model Delivery {
@@ -541,3 +545,54 @@ model SearchLog {
   @@index([municipalityId])
   @@index([createdAt])
 }
+
+// ============================================================================
+// CHATBOT (Chat Sessions & Messages)
+// ============================================================================
+
+model ChatSession {
+  id                        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  municipalityId            String   @db.Uuid
+  customerId                String   @db.Uuid
+  socketId                  String?  @db.VarChar(255)
+  status                    String   @default("ACTIVE") @db.VarChar(50) // ACTIVE, PAUSED, CLOSED
+  context                   Json?    // Almacenar contexto de conversación
+  messageCount              Int      @default(0)
+  lastMessageAt             DateTime? @db.Timestamptz()
+  createdAt                 DateTime @default(now()) @db.Timestamptz()
+  updatedAt                 DateTime @updatedAt @db.Timestamptz()
+  closedAt                  DateTime? @db.Timestamptz()
+
+  // Relations
+  customer                  Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  messages                  ChatMessage[]
+
+  @@index([customerId])
+  @@index([municipalityId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model ChatMessage {
+  id                        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  chatSessionId             String   @db.Uuid
+  role                      String   @db.VarChar(50) // USER, ASSISTANT, SYSTEM
+  content                   String
+  source                    String   @default("WEBSOCKET") @db.VarChar(50) // WEBSOCKET, WHATSAPP, API
+  messageType               String   @default("TEXT") @db.VarChar(50) // TEXT, ACTION, EVENT
+  metadata                  Json?    // Información adicional (tokens usados, timing, etc)
+  tokens                    Int?     // Tokens usados por Claude
+  processingTimeMs          Int?     // Tiempo de procesamiento
+  createdAt                 DateTime @default(now()) @db.Timestamptz()
+
+  // Relations
+  chatSession               ChatSession @relation(fields: [chatSessionId], references: [id], onDelete: Cascade)
+
+  @@index([chatSessionId])
+  @@index([role])
+  @@index([createdAt])
+  @@index([source])
+}
+
+// Relación inversa en Customer
+// (agregar al modelo Customer después)

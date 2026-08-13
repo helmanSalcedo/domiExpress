@@ -1,0 +1,76 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: domiexpress_postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: domiexpress
+      POSTGRES_PASSWORD: domiexpress_dev_pass
+      POSTGRES_DB: domiexpress_dev
+      POSTGRES_INITDB_ARGS: "-c shared_preload_libraries=pg_stat_statements"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U domiexpress"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - domiexpress_network
+
+  postgres_test:
+    image: postgres:15-alpine
+    container_name: domiexpress_postgres_test
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: domiexpress
+      POSTGRES_PASSWORD: domiexpress_test_pass
+      POSTGRES_DB: domiexpress_test
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U domiexpress"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - domiexpress_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: domiexpress_redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --appendfsync everysec
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - domiexpress_network
+
+  redis_test:
+    image: redis:7-alpine
+    container_name: domiexpress_redis_test
+    ports:
+      - "6380:6379"
+    command: redis-server
+    networks:
+      - domiexpress_network
+
+volumes:
+  postgres_data:
+  postgres_test_data:
+  redis_data:
+
+networks:
+  domiexpress_network:
+    driver: bridge
