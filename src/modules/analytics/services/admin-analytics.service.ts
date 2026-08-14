@@ -24,7 +24,7 @@ export class AdminAnalyticsService {
       where: dateFilter ? { createdAt: dateFilter } : {},
     });
 
-    const totalRevenue = orders.reduce((sum, order) => sum + Number(order.totalAmount), 0);
+    const totalRevenue = orders.reduce((sum: number, order: any) => sum + Number(order.totalAmount), 0);
 
     // Total deliveries completed
     const completedDeliveries = await this.prisma.delivery.count({
