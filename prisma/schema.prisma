@@ -210,7 +210,6 @@ model Product {
   rating                    Decimal  @default(5.0) @db.Decimal(2, 1)
   totalReviews              Int      @default(0)
   totalSold                 Int      @default(0)
-  embedding                 Unsupported("vector(384)")?
   createdAt                 DateTime @default(now()) @db.Timestamptz()
   updatedAt                 DateTime @updatedAt @db.Timestamptz()
   deletedAt                 DateTime? @db.Timestamptz()
