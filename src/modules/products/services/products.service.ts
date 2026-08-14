@@ -105,7 +105,7 @@ export class ProductsService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return products.map(p => this.formatProduct(p));
+    return products.map((p: any) => this.formatProduct(p));
   }
 
   async updateProduct(productId: string, dto: UpdateProductDto): Promise<ProductResponseDto> {
@@ -189,7 +189,7 @@ export class ProductsService {
       orderBy: { basePrice: 'asc' },
     });
 
-    return products.map(p => this.formatProduct(p));
+    return products.map((p: any) => this.formatProduct(p));
   }
 
   async searchProducts(commerceId: string, query: string): Promise<ProductResponseDto[]> {
@@ -207,7 +207,7 @@ export class ProductsService {
       take: 20,
     });
 
-    return products.map(p => this.formatProduct(p));
+    return products.map((p: any) => this.formatProduct(p));
   }
 
   async getCommerceProductStats(commerceId: string) {

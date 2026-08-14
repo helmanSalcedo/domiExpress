@@ -205,7 +205,7 @@ export class OrdersService {
       include: { items: true, customer: true },
     });
 
-    return orders.map(order => this.mapToResponseDto(order));
+    return orders.map((order: any) => this.mapToResponseDto(order));
   }
 
   async listCommerceOrders(
@@ -221,7 +221,7 @@ export class OrdersService {
         take: limit,
         skip: offset,
       })
-    ).map(oi => oi.orderId);
+    ).map((oi: any) => oi.orderId);
 
     const orders = await this.prisma.order.findMany({
       where: { id: { in: orderIds } },
@@ -229,7 +229,7 @@ export class OrdersService {
       include: { items: true, customer: true },
     });
 
-    return orders.map(order => this.mapToResponseDto(order));
+    return orders.map((order: any) => this.mapToResponseDto(order));
   }
 
   async getOrdersByStatus(
@@ -245,7 +245,7 @@ export class OrdersService {
       include: { items: true, customer: true },
     });
 
-    return orders.map(order => this.mapToResponseDto(order));
+    return orders.map((order: any) => this.mapToResponseDto(order));
   }
 
   async cancelOrder(orderId: string, customerId: string): Promise<OrderResponseDto> {

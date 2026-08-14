@@ -111,7 +111,7 @@ export class MunicipalitiesService {
     });
 
     const totalOrders = orders.length;
-    const totalRevenue = orders.reduce((sum, o) => sum + Number(o.subtotal || 0), 0);
+    const totalRevenue = orders.reduce((sum: number, o: any) => sum + Number(o.subtotal || 0), 0);
     const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
     const deliveries = await this.prisma.delivery.findMany({
@@ -122,9 +122,9 @@ export class MunicipalitiesService {
     });
 
     let averageDeliveryTime = 0;
-    const completedDeliveries = deliveries.filter(d => d.completedAt);
+    const completedDeliveries = deliveries.filter((d: any) => d.completedAt);
     if (completedDeliveries.length > 0) {
-      const totalTime = completedDeliveries.reduce((sum, d) => {
+      const totalTime = completedDeliveries.reduce((sum: number, d: any) => {
         const time = d.actualDurationMinutes || 0;
         return sum + time;
       }, 0);
