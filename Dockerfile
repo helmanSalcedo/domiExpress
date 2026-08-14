@@ -30,6 +30,9 @@ COPY --from=builder /app/dist ./dist
 # Copy Prisma schema and migrations
 COPY prisma ./prisma
 
+# Copy TypeScript config for tsconfig-paths runtime resolution
+COPY tsconfig*.json ./
+
 # Expose port
 EXPOSE 3000
 
