@@ -12,8 +12,8 @@ RUN npm ci --legacy-peer-deps
 # Copy source code and configs
 COPY . .
 
-# Build using NestJS CLI, then tsc as fallback to ensure dist is generated
-RUN TS_NODE_TRANSPILE_ONLY=true npm run build || npx tsc --project tsconfig.docker.json --skipLibCheck || true
+# Build using custom script that handles path aliases with webpack fallback
+RUN chmod +x build-docker.sh && ./build-docker.sh
 
 # Runtime stage
 FROM node:18-alpine
