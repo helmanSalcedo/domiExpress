@@ -12,8 +12,8 @@ RUN npm ci --legacy-peer-deps
 # Copy source code and configs
 COPY . .
 
-# Build application using NestJS CLI with fallback to tsc
-RUN npm run build || npx tsc -p tsconfig.json --outDir dist 2>&1 || true
+# Build using relaxed tsconfig for Docker environment
+RUN npx tsc -p tsconfig.docker.json --outDir dist
 
 # Runtime stage
 FROM node:18-alpine
