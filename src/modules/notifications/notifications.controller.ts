@@ -1,26 +1,22 @@
 import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common';
+import type { Request as ExpressRequest } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PushService } from './services/push.service';
-import { NotificationOrchestratorService } from './services/notification-orchestrator.service';
 
 @Controller('notifications')
 export class NotificationsController {
-  constructor(
-    private readonly pushService: PushService,
-    private readonly orchestrator: NotificationOrchestratorService,
-  ) {}
+  constructor(private readonly pushService: PushService) {}
 
   @Post('register-device')
   @UseGuards(JwtAuthGuard)
-  async registerDevice(@Request() req, @Body() body: { token: string }) {
-    const _userId = req.user.id;
-
+  async registerDevice(@Request() _req: ExpressRequest, @Body() body: { token: string }) {
     if (!body.token) {
       return { success: false, message: 'Token is required' };
     }
 
     // TODO: Store token in database
-    // await this.userService.addFCMToken(_userId, body.token);
+    // const userId = (req.user as any).id;
+    // await this.userService.addFCMToken(userId, body.token);
 
     return {
       success: true,
@@ -30,11 +26,14 @@ export class NotificationsController {
 
   @Post('unregister-device')
   @UseGuards(JwtAuthGuard)
-  async unregisterDevice(@Request() req, @Body() _body: { token: string }) {
-    const _userId = req.user.id;
+  async unregisterDevice(@Request() _req: ExpressRequest, @Body() body: { token: string }) {
+    if (!body.token) {
+      return { success: false, message: 'Token is required' };
+    }
 
     // TODO: Remove token from database
-    // await this.userService.removeFCMToken(_userId, _body.token);
+    // const userId = (req.user as any).id;
+    // await this.userService.removeFCMToken(userId, body.token);
 
     return {
       success: true,

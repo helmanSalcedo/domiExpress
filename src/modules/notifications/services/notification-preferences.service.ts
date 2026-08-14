@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '@shared/database/prisma.service';
 
 export interface NotificationPreferences {
   emailNotifications: boolean;
@@ -16,7 +15,7 @@ export interface NotificationPreferences {
 export class NotificationPreferencesService {
   private readonly logger = new Logger(NotificationPreferencesService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor() {}
 
   async getPreferences(userId: string): Promise<NotificationPreferences> {
     this.logger.debug(`Fetching notification preferences for user: ${userId}`);

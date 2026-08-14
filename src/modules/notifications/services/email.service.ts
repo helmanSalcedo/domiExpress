@@ -55,7 +55,7 @@ export class EmailService {
 
       this.logger.log(`📧 Sending email to ${to}: ${subject}`);
 
-      const _response = await this.client.post('/mail/send', {
+      await this.client.post('/mail/send', {
         personalizations: [
           {
             to: [{ email: to }],
@@ -255,7 +255,7 @@ export class EmailService {
     const result = await this.sendEmail(email, template, {
       orderId,
       customerName,
-      items,
+      items: items.toString(),
       amount: amount.toLocaleString('es-CO'),
     });
 

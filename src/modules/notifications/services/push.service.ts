@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import * as admin from 'firebase-admin';
+import admin from 'firebase-admin';
 
 interface PushNotification {
   title: string;
@@ -13,12 +13,13 @@ interface PushNotification {
 @Injectable()
 export class PushService {
   private readonly logger = new Logger(PushService.name);
-  private readonly messaging: admin.messaging.Messaging;
+  private messaging: any;
 
   constructor() {
+    this.messaging = null;
     if (process.env.FIREBASE_PROJECT_ID) {
       try {
-        const serviceAccount = {
+        const serviceAccount: any = {
           projectId: process.env.FIREBASE_PROJECT_ID,
           privateKeyId: process.env.FIREBASE_PRIVATE_KEY_ID,
           privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
@@ -30,11 +31,11 @@ export class PushService {
           clientX509CertUrl: `https://www.googleapis.com/robot/v1/metadata/x509/${process.env.FIREBASE_CLIENT_EMAIL}`,
         };
 
-        admin.initializeApp({
-          credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
+        (admin as any).initializeApp({
+          credential: (admin as any).credential.cert(serviceAccount),
           projectId: process.env.FIREBASE_PROJECT_ID,
         });
-        this.messaging = admin.messaging();
+        this.messaging = (admin as any).messaging();
         this.logger.log('✅ Firebase Admin SDK initialized successfully');
       } catch (error) {
         this.logger.error(
@@ -44,7 +45,6 @@ export class PushService {
       }
     } else {
       this.logger.warn('⚠️ Firebase credentials not configured');
-      this.messaging = null;
     }
   }
 
@@ -60,7 +60,7 @@ export class PushService {
 
       this.logger.log(`📲 Sending push notification to ${deviceToken}: ${notification.title}`);
 
-      const message: admin.messaging.Message = {
+      const message: any = {
         notification: {
           title: notification.title,
           body: notification.body,
@@ -259,7 +259,7 @@ export class PushService {
 
       this.logger.log(`📲 Sending notification to topic '${topic}': ${notification.title}`);
 
-      const message: admin.messaging.Message = {
+      const message: any = {
         notification: {
           title: notification.title,
           body: notification.body,
