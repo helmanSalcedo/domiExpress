@@ -93,7 +93,7 @@ export class SearchRepository {
       distinct: ['categoryId'],
     });
 
-    return products.map(p => p.categoryId).filter(c => c !== null && c !== undefined) as string[];
+    return products.map((p: any) => p.categoryId).filter((c: any) => c !== null && c !== undefined) as string[];
   }
 
   async getPopularSearches(limit = 10): Promise<string[]> {
@@ -108,7 +108,7 @@ export class SearchRepository {
       distinct: ['query'],
     });
 
-    return searches.map(s => s.query);
+    return searches.map((s: any) => s.query);
   }
 
   async logSearch(query: string, municipalityId: string, resultCount: number) {

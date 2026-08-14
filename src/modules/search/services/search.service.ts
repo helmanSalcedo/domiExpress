@@ -138,7 +138,7 @@ export class SearchService {
         take: limit,
       });
 
-      return related.map(p => ({
+      return related.map((p: any) => ({
         productId: p.id,
         productName: p.name,
         description: p.description || undefined,
@@ -178,7 +178,7 @@ export class SearchService {
         take: limit,
       });
 
-      return products.map(p => ({
+      return products.map((p: any) => ({
         productId: p.id,
         productName: p.name,
         description: p.description || undefined,

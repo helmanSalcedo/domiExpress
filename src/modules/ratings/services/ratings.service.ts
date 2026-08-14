@@ -90,13 +90,13 @@ export class RatingsService {
       };
     }
 
-    const averageRating = ratings.reduce((sum, r) => sum + r.score, 0) / ratings.length;
+    const averageRating = ratings.reduce((sum: number, r: any) => sum + r.score, 0) / ratings.length;
     const distribution = {
-      one: ratings.filter(r => r.score === 1).length,
-      two: ratings.filter(r => r.score === 2).length,
-      three: ratings.filter(r => r.score === 3).length,
-      four: ratings.filter(r => r.score === 4).length,
-      five: ratings.filter(r => r.score === 5).length,
+      one: ratings.filter((r: any) => r.score === 1).length,
+      two: ratings.filter((r: any) => r.score === 2).length,
+      three: ratings.filter((r: any) => r.score === 3).length,
+      four: ratings.filter((r: any) => r.score === 4).length,
+      five: ratings.filter((r: any) => r.score === 5).length,
     };
 
     return {
@@ -127,13 +127,13 @@ export class RatingsService {
       };
     }
 
-    const averageRating = ratings.reduce((sum, r) => sum + r.score, 0) / ratings.length;
+    const averageRating = ratings.reduce((sum: number, r: any) => sum + r.score, 0) / ratings.length;
     const distribution = {
-      one: ratings.filter(r => r.score === 1).length,
-      two: ratings.filter(r => r.score === 2).length,
-      three: ratings.filter(r => r.score === 3).length,
-      four: ratings.filter(r => r.score === 4).length,
-      five: ratings.filter(r => r.score === 5).length,
+      one: ratings.filter((r: any) => r.score === 1).length,
+      two: ratings.filter((r: any) => r.score === 2).length,
+      three: ratings.filter((r: any) => r.score === 3).length,
+      four: ratings.filter((r: any) => r.score === 4).length,
+      five: ratings.filter((r: any) => r.score === 5).length,
     };
 
     return {
@@ -152,7 +152,7 @@ export class RatingsService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return ratings.map(r => this.formatRating(r));
+    return ratings.map((r: any) => this.formatRating(r));
   }
 
   async getDriverReviews(driverId: string, skip = 0, take = 20): Promise<RatingResponseDto[]> {
@@ -163,7 +163,7 @@ export class RatingsService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return ratings.map(r => this.formatRating(r));
+    return ratings.map((r: any) => this.formatRating(r));
   }
 
   private async updateAverageRatings(commerceId?: string, driverId?: string) {

@@ -42,6 +42,7 @@
     "@nestjs/jwt": "^11.0.1",
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.2.0",
+    "@nestjs/platform-socket.io": "^11.2.0",
     "@nestjs/platform-ws": "^10.2.0",
     "@nestjs/swagger": "^7.1.9",
     "@nestjs/throttler": "^4.1.0",
