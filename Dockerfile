@@ -6,8 +6,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies with legacy peer deps for NestJS compatibility
+RUN npm ci --legacy-peer-deps
 
 # Copy source code
 COPY . .
@@ -20,9 +20,9 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Install production dependencies only
+# Install production dependencies only with legacy peer deps
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci --omit=dev --legacy-peer-deps
 
 # Copy built application from builder
 COPY --from=builder /app/dist ./dist
