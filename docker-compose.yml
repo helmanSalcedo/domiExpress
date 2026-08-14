@@ -17,7 +17,7 @@ services:
       POSTGRES_USER: ${DB_USER:-domiexpress}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-domiexpress_dev_pass}
       POSTGRES_DB: ${DB_NAME:-domiexpress_dev}
-      POSTGRES_INITDB_ARGS: "--shared_preload_libraries=pg_stat_statements --max_connections=200"
+      POSTGRES_INITDB_ARGS: ""
       TZ: UTC
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -91,7 +91,6 @@ services:
       --appendfsync everysec
       --maxmemory 256mb
       --maxmemory-policy allkeys-lru
-      --requirepass ${REDIS_PASSWORD:-}
     volumes:
       - redis_data:/data
     healthcheck:
