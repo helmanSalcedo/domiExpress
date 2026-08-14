@@ -105,7 +105,7 @@ export class ProductsService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return products.map((p) => this.formatProduct(p));
+    return products.map(p => this.formatProduct(p));
   }
 
   async updateProduct(productId: string, dto: UpdateProductDto): Promise<ProductResponseDto> {
@@ -189,13 +189,10 @@ export class ProductsService {
       orderBy: { basePrice: 'asc' },
     });
 
-    return products.map((p) => this.formatProduct(p));
+    return products.map(p => this.formatProduct(p));
   }
 
-  async searchProducts(
-    commerceId: string,
-    query: string,
-  ): Promise<ProductResponseDto[]> {
+  async searchProducts(commerceId: string, query: string): Promise<ProductResponseDto[]> {
     this.logger.debug(`Searching products: ${query}`);
 
     const products = await this.prisma.product.findMany({
@@ -210,7 +207,7 @@ export class ProductsService {
       take: 20,
     });
 
-    return products.map((p) => this.formatProduct(p));
+    return products.map(p => this.formatProduct(p));
   }
 
   async getCommerceProductStats(commerceId: string) {
@@ -219,11 +216,12 @@ export class ProductsService {
     });
 
     const total = products.length;
-    const active = products.filter((p) => p.isActive).length;
+    const active = products.filter(p => p.isActive).length;
     const inactive = total - active;
-    const avgPrice = products.length > 0
-      ? products.reduce((sum, p) => sum + Number(p.basePrice), 0) / products.length
-      : 0;
+    const avgPrice =
+      products.length > 0
+        ? products.reduce((sum, p) => sum + Number(p.basePrice), 0) / products.length
+        : 0;
 
     return {
       totalProducts: total,

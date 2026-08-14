@@ -5,7 +5,6 @@ import { WsException } from '@nestjs/websockets';
 
 describe('ChatGateway', () => {
   let gateway: ChatGateway;
-  let chatbotService: ChatbotService;
 
   const mockChatbotService = {
     createSession: jest.fn(),
@@ -27,7 +26,6 @@ describe('ChatGateway', () => {
     }).compile();
 
     gateway = module.get<ChatGateway>(ChatGateway);
-    chatbotService = module.get<ChatbotService>(ChatbotService);
   });
 
   afterEach(() => {
@@ -126,9 +124,7 @@ describe('ChatGateway', () => {
 
   describe('handlePing', () => {
     it('should return pong', () => {
-      const mockClient = { id: 'socket-123' };
-
-      const result = gateway.handlePing(mockClient as any);
+      const result = gateway.handlePing();
 
       expect(result.status).toBe('pong');
       expect(result.timestamp).toBeDefined();

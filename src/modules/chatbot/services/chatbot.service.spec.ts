@@ -6,9 +6,6 @@ import { ClaudeIntegrationService } from './claude-integration.service';
 
 describe('ChatbotService', () => {
   let service: ChatbotService;
-  let sessionService: ChatSessionService;
-  let messageService: ChatMessageService;
-  let claudeService: ClaudeIntegrationService;
 
   const mockSessionService = {
     createSession: jest.fn(),
@@ -45,9 +42,6 @@ describe('ChatbotService', () => {
     }).compile();
 
     service = module.get<ChatbotService>(ChatbotService);
-    sessionService = module.get<ChatSessionService>(ChatSessionService);
-    messageService = module.get<ChatMessageService>(ChatMessageService);
-    claudeService = module.get<ClaudeIntegrationService>(ClaudeIntegrationService);
   });
 
   afterEach(() => {

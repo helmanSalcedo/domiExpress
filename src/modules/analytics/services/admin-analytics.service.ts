@@ -10,7 +10,7 @@ export class AdminAnalyticsService {
   async getDashboardMetrics(startDate?: Date, endDate?: Date) {
     this.logger.log('📊 Fetching dashboard metrics');
 
-    const dateFilter = {};
+    const dateFilter: any = {};
     if (startDate) dateFilter['gte'] = startDate;
     if (endDate) dateFilter['lte'] = endDate;
 
@@ -50,7 +50,7 @@ export class AdminAnalyticsService {
 
     // Top commerce by orders
     const topCommerce = await this.prisma.order.groupBy({
-      by: ['commerceId'],
+      by: ['commerceId'] as any,
       _sum: { totalAmount: true },
       _count: { id: true },
       orderBy: { _count: { id: 'desc' } },
@@ -63,14 +63,14 @@ export class AdminAnalyticsService {
       completedDeliveries,
       activeDrivers,
       averageOrderValue: Math.round(avgOrderValue),
-      ordersByStatus: ordersByStatus.map((s) => ({
+      ordersByStatus: ordersByStatus.map(s => ({
         status: s.status,
         count: s._count.id,
       })),
-      topCommerce: topCommerce.map((c) => ({
+      topCommerce: topCommerce.map((c: any) => ({
         commerceId: c.commerceId,
-        orderCount: c._count.id,
-        totalRevenue: c._sum.totalAmount ? Number(c._sum.totalAmount) : 0,
+        orderCount: c._count?.id || 0,
+        totalRevenue: c._sum?.totalAmount ? Number(c._sum.totalAmount) : 0,
       })),
     };
   }
@@ -92,7 +92,7 @@ export class AdminAnalyticsService {
     // Group by day
     const dailyRevenue = new Map<string, number>();
 
-    orders.forEach((order) => {
+    orders.forEach(order => {
       const dateKey = order.createdAt.toISOString().split('T')[0];
       const current = dailyRevenue.get(dateKey) || 0;
       dailyRevenue.set(dateKey, current + Number(order.totalAmount));
@@ -124,13 +124,15 @@ export class AdminAnalyticsService {
 
     // Average driver stats
     const drivers = await this.prisma.driver.findMany();
-    const avgRating = drivers.length > 0
-      ? drivers.reduce((sum, d) => sum + Number(d.rating), 0) / drivers.length
-      : 0;
+    const avgRating =
+      drivers.length > 0
+        ? drivers.reduce((sum, d) => sum + Number(d.rating), 0) / drivers.length
+        : 0;
 
-    const avgDeliveries = drivers.length > 0
-      ? drivers.reduce((sum, d) => sum + d.totalDeliveries, 0) / drivers.length
-      : 0;
+    const avgDeliveries =
+      drivers.length > 0
+        ? drivers.reduce((sum, d) => sum + d.totalDeliveries, 0) / drivers.length
+        : 0;
 
     return {
       totalDrivers,
@@ -139,7 +141,7 @@ export class AdminAnalyticsService {
       suspendedDrivers,
       averageRating: Math.round(avgRating * 10) / 10,
       averageDeliveries: Math.round(avgDeliveries),
-      topDrivers: topDrivers.map((d) => ({
+      topDrivers: topDrivers.map(d => ({
         id: d.id,
         name: d.fullName,
         rating: Number(d.rating),
@@ -156,7 +158,7 @@ export class AdminAnalyticsService {
 
     // Top commerce by revenue
     const topCommerce = await this.prisma.order.groupBy({
-      by: ['commerceId'],
+      by: ['commerceId'] as any,
       _sum: { totalAmount: true },
       _count: { id: true },
       orderBy: { _sum: { totalAmount: 'desc' } },
@@ -166,10 +168,10 @@ export class AdminAnalyticsService {
     return {
       totalCommerce,
       verifiedCommerce,
-      topCommerce: topCommerce.map((c) => ({
+      topCommerce: topCommerce.map((c: any) => ({
         commerceId: c.commerceId,
-        orderCount: c._count.id,
-        totalRevenue: c._sum.totalAmount ? Math.round(Number(c._sum.totalAmount)) : 0,
+        orderCount: c._count?.id || 0,
+        totalRevenue: c._sum?.totalAmount ? Math.round(Number(c._sum.totalAmount)) : 0,
       })),
     };
   }
@@ -206,7 +208,7 @@ export class AdminAnalyticsService {
       totalCustomers,
       activeCustomers,
       averageOrdersPerCustomer: Math.round(avgOrdersPerCustomer * 100) / 100,
-      topMunicipalities: customersByMunicipality.map((c) => ({
+      topMunicipalities: customersByMunicipality.map(c => ({
         municipalityId: c.municipalityId,
         customerCount: c._count.id,
       })),
@@ -230,7 +232,7 @@ export class AdminAnalyticsService {
       { orders: number; revenue: number; statuses: Record<string, number> }
     >();
 
-    orders.forEach((order) => {
+    orders.forEach(order => {
       const dateKey = order.createdAt.toISOString().split('T')[0];
       const current = dailyTrends.get(dateKey) || {
         orders: 0,

@@ -117,9 +117,9 @@ describe('PaymentsService', () => {
         totalAmount: 50000,
       });
 
-      await expect(
-        service.generatePaymentLink('cust-1', { orderId: 'order-1' }),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.generatePaymentLink('cust-1', { orderId: 'order-1' })).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should reuse existing pending payment', async () => {
@@ -303,9 +303,9 @@ describe('PaymentsService', () => {
         order: { customerId: 'cust-1' },
       });
 
-      await expect(
-        service.requestRefund('cust-1', { paymentId: 'pay-1' }),
-      ).rejects.toThrow(BadRequestException);
+      await expect(service.requestRefund('cust-1', { paymentId: 'pay-1' })).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should throw NotFoundException when payment does not belong to customer', async () => {
@@ -315,9 +315,9 @@ describe('PaymentsService', () => {
         order: { customerId: 'different-customer' },
       });
 
-      await expect(
-        service.requestRefund('cust-1', { paymentId: 'pay-1' }),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.requestRefund('cust-1', { paymentId: 'pay-1' })).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

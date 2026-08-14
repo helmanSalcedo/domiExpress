@@ -7,7 +7,7 @@ import {
   ConnectedSocket,
   WsException,
 } from '@nestjs/websockets';
-import { Logger, UseGuards } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { ChatbotService } from '../services/chatbot.service';
 import { CreateMessageDto } from '../dto/create-message.dto';
@@ -66,8 +66,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         message: 'Chat session started',
       };
     } catch (error) {
-      this.logger.error(`Error starting session: ${error.message}`);
-      throw new WsException(error.message);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Error starting session: ${message}`);
+      throw new WsException(message);
     }
   }
 
@@ -122,18 +123,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         message: 'Message processed',
       };
     } catch (error) {
-      this.logger.error(`Error processing message: ${error.message}`);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Error processing message: ${message}`);
       client.emit('error', {
         status: 'error',
-        message: error.message,
+        message,
       });
-      throw new WsException(error.message);
+      throw new WsException(message);
     }
   }
 
   @SubscribeMessage('get_history')
   async handleGetHistory(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() _client: Socket,
     @MessageBody() data: { sessionId: string; limit?: number },
   ) {
     try {
@@ -154,8 +156,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         },
       };
     } catch (error) {
-      this.logger.error(`Error retrieving history: ${error.message}`);
-      throw new WsException(error.message);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Error retrieving history: ${message}`);
+      throw new WsException(message);
     }
   }
 
@@ -182,13 +185,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         sessionId: closedSession.id,
       };
     } catch (error) {
-      this.logger.error(`Error ending session: ${error.message}`);
-      throw new WsException(error.message);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Error ending session: ${message}`);
+      throw new WsException(message);
     }
   }
 
   @SubscribeMessage('ping')
-  handlePing(@ConnectedSocket() client: Socket) {
+  handlePing() {
     return {
       status: 'pong',
       timestamp: new Date(),

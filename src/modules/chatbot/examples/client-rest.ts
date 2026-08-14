@@ -28,10 +28,8 @@ interface ChatResponse {
 
 class ChatbotRestClient {
   private client: AxiosInstance;
-  private baseUrl: string;
 
   constructor(baseUrl: string = 'http://localhost:3000') {
-    this.baseUrl = baseUrl;
     this.client = axios.create({
       baseURL: baseUrl,
       headers: {

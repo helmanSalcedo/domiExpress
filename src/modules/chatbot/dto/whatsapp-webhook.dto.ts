@@ -1,13 +1,13 @@
 export class WhatsAppMessageDto {
-  from: string;
-  text: string;
-  messageId: string;
-  timestamp: string;
+  from!: string;
+  text!: string;
+  messageId!: string;
+  timestamp!: string;
 }
 
 export class WhatsAppWebhookDto {
-  object: string;
-  entry: Array<{
+  object!: string;
+  entry!: Array<{
     id: string;
     changes: Array<{
       value: {

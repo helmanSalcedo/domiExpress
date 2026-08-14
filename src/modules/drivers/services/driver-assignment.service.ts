@@ -48,7 +48,7 @@ export class DriverAssignmentService {
     const pickupLocationLng = delivery.pickupLocationLongitude;
 
     const driversWithDistance = activeDrivers
-      .map((driver) => {
+      .map(driver => {
         const distanceKm = this.calculateDistance(
           pickupLocationLat,
           pickupLocationLng,
@@ -62,7 +62,7 @@ export class DriverAssignmentService {
           rating: Number(driver.rating || 4.5),
         };
       })
-      .filter((d) => d.distanceKm <= 30)
+      .filter(d => d.distanceKm <= 30)
       .sort((a, b) => {
         const scoreA = a.distanceKm * 2 - a.rating * 10 + a.activeDeliveries * 5;
         const scoreB = b.distanceKm * 2 - b.rating * 10 + b.activeDeliveries * 5;
@@ -99,7 +99,7 @@ export class DriverAssignmentService {
       take: limit,
     });
 
-    return drivers.map((d) => ({
+    return drivers.map(d => ({
       id: d.id,
       name: d.fullName,
       phone: d.phone,

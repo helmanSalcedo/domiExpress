@@ -240,7 +240,7 @@ describe('MVP Completeness Checklist', () => {
       'Admin Dashboard': true,
       'Products CRUD': true,
       'Driver Management': true,
-      'Analytics': true,
+      Analytics: true,
       'Security (JWT, HMAC)': true,
     };
 

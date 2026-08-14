@@ -72,9 +72,9 @@ describe('WebhooksController', () => {
         },
       };
 
-      await expect(
-        controller.handleWompiWebhook(req.body, req),
-      ).rejects.toThrow(BadRequestException);
+      await expect(controller.handleWompiWebhook(req.body, req)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should process approved payment webhook', async () => {
@@ -297,9 +297,9 @@ describe('WebhooksController', () => {
         },
       };
 
-      await expect(
-        controller.handleWompiWebhook(req.body, req),
-      ).rejects.toThrow(BadRequestException);
+      await expect(controller.handleWompiWebhook(req.body, req)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 

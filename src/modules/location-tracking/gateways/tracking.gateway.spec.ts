@@ -82,8 +82,8 @@ describe('TrackingGateway', () => {
         id: 'deliv-1',
         status: 'IN_TRANSIT',
         driverId: 'driver-1',
-        deliveryLatitude: 4.7100,
-        deliveryLongitude: -74.0730,
+        deliveryLatitude: 4.71,
+        deliveryLongitude: -74.073,
       });
 
       await gateway.handleSubscribeDelivery(mockSocket as any, { deliveryId: 'deliv-1' });
@@ -122,7 +122,7 @@ describe('TrackingGateway', () => {
 
       await gateway.handleLocationUpdate(mockSocket as any, {
         deliveryId: 'deliv-1',
-        latitude: 4.7110,
+        latitude: 4.711,
         longitude: -74.0721,
         accuracy: 5,
       });
@@ -130,7 +130,7 @@ describe('TrackingGateway', () => {
       expect(mockLocationTrackingService.updateLocation).toHaveBeenCalledWith(
         expect.objectContaining({
           deliveryId: 'deliv-1',
-          latitude: 4.7110,
+          latitude: 4.711,
           longitude: -74.0721,
         }),
       );
@@ -142,7 +142,7 @@ describe('TrackingGateway', () => {
       await expect(
         gateway.handleLocationUpdate(mockSocket as any, {
           deliveryId: 'deliv-1',
-          latitude: 4.7110,
+          latitude: 4.711,
           longitude: -74.0721,
         }),
       ).rejects.toThrow(WsException);

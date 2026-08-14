@@ -36,10 +36,10 @@ describe('DriverAssignmentService', () => {
   describe('assignNearestDriver', () => {
     it('should assign the closest driver', async () => {
       const deliveryId = 'deliv-1';
-      const pickupLat = 4.7110;
+      const pickupLat = 4.711;
       const pickupLng = -74.0721;
-      const deliveryLat = 4.7100;
-      const deliveryLng = -74.0730;
+      const deliveryLat = 4.71;
+      const deliveryLng = -74.073;
 
       mockPrismaService.delivery.findUnique.mockResolvedValue({
         id: deliveryId,
@@ -78,9 +78,9 @@ describe('DriverAssignmentService', () => {
     it('should throw NotFoundException when delivery not found', async () => {
       mockPrismaService.delivery.findUnique.mockResolvedValue(null);
 
-      await expect(
-        service.assignNearestDriver('invalid-deliv', 4.7110, -74.0721),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.assignNearestDriver('invalid-deliv', 4.711, -74.0721)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw BadRequestException when no active drivers', async () => {
@@ -95,9 +95,9 @@ describe('DriverAssignmentService', () => {
 
       mockPrismaService.driver.findMany.mockResolvedValue([]);
 
-      await expect(
-        service.assignNearestDriver('deliv-1', 4.7110, -74.0721),
-      ).rejects.toThrow(BadRequestException);
+      await expect(service.assignNearestDriver('deliv-1', 4.711, -74.0721)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should prioritize drivers with fewer active deliveries', async () => {
@@ -105,10 +105,10 @@ describe('DriverAssignmentService', () => {
 
       mockPrismaService.delivery.findUnique.mockResolvedValue({
         id: deliveryId,
-        pickupLocationLatitude: 4.7110,
+        pickupLocationLatitude: 4.711,
         pickupLocationLongitude: -74.0721,
-        deliveryLocationLatitude: 4.7100,
-        deliveryLocationLongitude: -74.0730,
+        deliveryLocationLatitude: 4.71,
+        deliveryLocationLongitude: -74.073,
         order: {
           customer: {
             municipalityId: 'mun-1',
@@ -131,7 +131,7 @@ describe('DriverAssignmentService', () => {
         },
       ]);
 
-      const result = await service.assignNearestDriver(deliveryId, 4.7110, -74.0721);
+      const result = await service.assignNearestDriver(deliveryId, 4.711, -74.0721);
 
       expect(result.driverId).toBe('driver-2');
     });

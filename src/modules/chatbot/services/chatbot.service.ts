@@ -2,8 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ChatSessionService } from './chat-session.service';
 import { ChatMessageService } from './chat-message.service';
 import { ClaudeIntegrationService } from './claude-integration.service';
-import { CreateChatSessionDto, ChatSessionDto } from '../dto/chat-session.dto';
-import { ChatResponseDto } from '../dto/chat-session.dto';
+import { ChatSessionDto, ChatResponseDto } from '../dto/chat-session.dto';
 
 @Injectable()
 export class ChatbotService {
@@ -32,7 +31,7 @@ export class ChatbotService {
       }
 
       // Guardar mensaje del usuario
-      const userMessage = await this.messageService.createMessage(session.id, 'USER', content, {
+      await this.messageService.createMessage(session.id, 'USER', content, {
         source: 'WEBSOCKET',
       });
 
@@ -77,7 +76,8 @@ export class ChatbotService {
         timestamp: assistantMessage.createdAt,
       };
     } catch (error) {
-      this.logger.error(`Error processing message: ${error.message}`);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Error processing message: ${message}`);
       throw error;
     }
   }

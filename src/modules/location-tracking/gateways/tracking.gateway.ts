@@ -123,7 +123,7 @@ export class TrackingGateway implements OnGatewayConnection, OnGatewayDisconnect
       if (!this.deliverySubscribers.has(deliveryId)) {
         this.deliverySubscribers.set(deliveryId, new Set());
       }
-      this.deliverySubscribers.get(deliveryId).add(client.id);
+      this.deliverySubscribers.get(deliveryId)?.add(client.id);
       session.deliveryId = deliveryId;
 
       // Unirse a room
@@ -198,7 +198,6 @@ export class TrackingGateway implements OnGatewayConnection, OnGatewayDisconnect
 
       // Guardar ubicación en DB y Redis
       await this.locationTrackingService.updateLocation(
-        deliveryId,
         session.userId,
         latitude,
         longitude,
@@ -241,7 +240,7 @@ export class TrackingGateway implements OnGatewayConnection, OnGatewayDisconnect
         // Get driver's active deliveries
         deliveries = await this.deliveriesService.listDriverDeliveries(
           session.userId,
-          'IN_TRANSIT',
+          'IN_TRANSIT' as any,
           10,
           0,
         );
@@ -253,7 +252,7 @@ export class TrackingGateway implements OnGatewayConnection, OnGatewayDisconnect
       }
 
       client.emit('active_deliveries', {
-        deliveries: deliveries.map((d) => ({
+        deliveries: deliveries.map(d => ({
           id: d.id,
           orderId: d.orderId,
           driverId: d.driverId,

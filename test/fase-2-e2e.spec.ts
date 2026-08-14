@@ -179,8 +179,8 @@ describe('FASE 2: E2E Integration Tests (Order → Payment → Delivery)', () =>
         .put(`/deliveries/${deliveryId}/location`)
         .set('Authorization', `Bearer test-jwt-token-driver-${driverId}`)
         .send({
-          latitude: 4.7100,
-          longitude: -74.0730,
+          latitude: 4.71,
+          longitude: -74.073,
         })
         .expect(HttpStatus.OK);
 
@@ -323,7 +323,7 @@ describe('FASE 2: Performance Tests', () => {
 
       const start = Date.now();
 
-      const promises = orders.map((order) =>
+      const promises = orders.map(order =>
         request(app.getHttpServer())
           .post('/orders')
           .set('Authorization', `Bearer test-jwt-token-${order.customerId}`)
@@ -333,7 +333,7 @@ describe('FASE 2: Performance Tests', () => {
       const results = await Promise.all(promises);
       const duration = Date.now() - start;
 
-      const successful = results.filter((r) => r.status === 201).length;
+      const successful = results.filter(r => r.status === 201).length;
 
       console.log(`✅ Processed ${successful}/10 concurrent orders in ${duration}ms`);
       expect(successful).toBe(10);
@@ -345,7 +345,7 @@ describe('FASE 2: Performance Tests', () => {
       // Simular 5 deliveries simultáneas
       const deliveries = Array.from({ length: 5 }, (_, i) => ({
         id: `deliv-${i}`,
-        pickupLat: 4.7110 + i * 0.001,
+        pickupLat: 4.711 + i * 0.001,
         pickupLng: -74.0721 + i * 0.001,
       }));
 

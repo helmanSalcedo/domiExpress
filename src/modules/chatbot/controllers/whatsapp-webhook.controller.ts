@@ -64,8 +64,9 @@ export class WhatsAppWebhookController {
 
       return { success: true };
     } catch (error) {
-      this.logger.error(`Error processing webhook: ${error.message}`);
-      return { success: false, error: error.message };
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Error processing webhook: ${message}`);
+      return { success: false, error: message };
     }
   }
 

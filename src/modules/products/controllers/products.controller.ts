@@ -20,7 +20,12 @@ import {
   ApiNotFoundResponse,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
-import { ProductsService, CreateProductDto, UpdateProductDto, ProductResponseDto } from '../services/products.service';
+import {
+  ProductsService,
+  CreateProductDto,
+  UpdateProductDto,
+  ProductResponseDto,
+} from '../services/products.service';
 
 @ApiTags('Products')
 @Controller('products')

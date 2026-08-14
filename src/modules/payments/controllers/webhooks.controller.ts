@@ -100,9 +100,7 @@ export class WebhooksController {
   }
 
   private async handlePaymentFailed(payment: any) {
-    this.logger.warn(
-      `⚠️ Payment failed for order: ${payment.orderId}, updating order status`,
-    );
+    this.logger.warn(`⚠️ Payment failed for order: ${payment.orderId}, updating order status`);
 
     // Actualizar orden a FAILED (ya se hace en PaymentsService.processWebhook)
     // pero podríamos enviar notificación aquí (TODO)
@@ -113,10 +111,10 @@ export class WebhooksController {
     // En producción, obtener de DB con Prisma
     return {
       id: orderId,
-      pickupLocationLatitude: 4.7110,
+      pickupLocationLatitude: 4.711,
       pickupLocationLongitude: -74.0721,
-      deliveryLocationLatitude: 4.7100,
-      deliveryLocationLongitude: -74.0730,
+      deliveryLocationLatitude: 4.71,
+      deliveryLocationLongitude: -74.073,
       customerMunicipalityId: 'mun-1',
       reference: `ORD-${orderId.slice(0, 8)}`,
     };
