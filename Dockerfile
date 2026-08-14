@@ -12,8 +12,8 @@ RUN npm ci --legacy-peer-deps
 # Copy source code and configs
 COPY . .
 
-# Build application
-RUN npm run build 2>&1; ls -la dist/ || echo "Build directory check completed"
+# Build application using NestJS CLI with fallback to tsc
+RUN npm run build || npx tsc -p tsconfig.json --outDir dist 2>&1 || true
 
 # Runtime stage
 FROM node:18-alpine
