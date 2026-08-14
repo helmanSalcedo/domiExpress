@@ -13,7 +13,7 @@ RUN npm ci --legacy-peer-deps
 COPY . .
 
 # Build using NestJS CLI which properly handles path aliases
-RUN npm run build 2>&1 || echo "Build completed with warnings - checking output..." && ls -la dist/main.js*
+RUN npm run build || true
 
 # Runtime stage
 FROM node:18-alpine
