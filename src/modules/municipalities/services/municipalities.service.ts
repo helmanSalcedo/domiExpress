@@ -54,7 +54,7 @@ export class MunicipalitiesService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return municipalities.map(m => this.formatMunicipality(m));
+    return municipalities.map((m: any) => this.formatMunicipality(m));
   }
 
   async updateMunicipality(

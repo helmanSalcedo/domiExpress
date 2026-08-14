@@ -72,7 +72,7 @@ export class DriverEarningsService {
       take: 50,
     });
 
-    return earnings.map(e => this.formatEarning(e));
+    return earnings.map((e: any) => this.formatEarning(e));
   }
 
   async getEarningsHistory(driverId: string): Promise<EarningsHistoryDto> {
@@ -88,7 +88,7 @@ export class DriverEarningsService {
       where: { driverId },
     });
 
-    const totalEarnings = allEarnings.reduce((sum, e) => sum + Number(e.totalAmount), 0);
+    const totalEarnings = allEarnings.reduce((sum: number, e: any) => sum + Number(e.totalAmount), 0);
     const totalDeliveries = allEarnings.length;
     const averageEarningPerDelivery = totalDeliveries > 0 ? totalEarnings / totalDeliveries : 0;
 

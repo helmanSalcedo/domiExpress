@@ -115,9 +115,9 @@ export class DisputesService {
     const closedDisputes = allDisputes.filter(d => d.status === DisputeStatus.CLOSED).length;
 
     let averageResolutionTime = 0;
-    const resolvedWithTime = allDisputes.filter(d => d.resolvedAt);
+    const resolvedWithTime = allDisputes.filter((d: any) => d.resolvedAt);
     if (resolvedWithTime.length > 0) {
-      const totalTime = resolvedWithTime.reduce((sum, d) => {
+      const totalTime = resolvedWithTime.reduce((sum: number, d: any) => {
         const createdTime = d.createdAt.getTime();
         const resolvedTime = (d.resolvedAt as Date).getTime();
         return sum + (resolvedTime - createdTime) / (1000 * 60 * 60);
