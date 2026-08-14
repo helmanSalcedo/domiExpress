@@ -172,7 +172,7 @@ export class RatingsService {
         where: { commerceId },
       });
       if (ratings.length > 0) {
-        const average = ratings.reduce((sum, r) => sum + r.score, 0) / ratings.length;
+        const average = ratings.reduce((sum: number, r: any) => sum + r.score, 0) / ratings.length;
         await this.prisma.commerce.update({
           where: { id: commerceId },
           data: { rating: average, totalReviews: ratings.length },
@@ -185,7 +185,7 @@ export class RatingsService {
         where: { driverId },
       });
       if (ratings.length > 0) {
-        const average = ratings.reduce((sum, r) => sum + r.score, 0) / ratings.length;
+        const average = ratings.reduce((sum: number, r: any) => sum + r.score, 0) / ratings.length;
         await this.prisma.driver.update({
           where: { id: driverId },
           data: { rating: average },

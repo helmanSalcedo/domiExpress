@@ -216,11 +216,11 @@ export class ProductsService {
     });
 
     const total = products.length;
-    const active = products.filter(p => p.isActive).length;
+    const active = products.filter((p: any) => p.isActive).length;
     const inactive = total - active;
     const avgPrice =
       products.length > 0
-        ? products.reduce((sum, p) => sum + Number(p.basePrice), 0) / products.length
+        ? products.reduce((sum: number, p: any) => sum + Number(p.basePrice), 0) / products.length
         : 0;
 
     return {
