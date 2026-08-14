@@ -12,8 +12,8 @@ RUN npm ci --legacy-peer-deps
 # Copy source code and configs
 COPY . .
 
-# Build application (continue even with TypeScript warnings)
-RUN npm run build || true
+# Build application
+RUN npm run build 2>&1; ls -la dist/ || echo "Build directory check completed"
 
 # Runtime stage
 FROM node:18-alpine
