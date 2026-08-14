@@ -24,7 +24,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     const traceId = (request.headers['x-trace-id'] as string) || this.generateTraceId();
 
-    let errorMessage: string | string[] = 'Internal server error';
+    let errorMessage: string = 'Internal server error';
     let errorType = 'HttpException';
 
     if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
