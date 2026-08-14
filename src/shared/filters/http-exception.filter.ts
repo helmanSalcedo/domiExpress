@@ -41,7 +41,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       path: request.url,
       method: request.method,
       message: errorMessage,
-      error: errorType,
+      error: String(errorType),
       traceId,
     };
 
