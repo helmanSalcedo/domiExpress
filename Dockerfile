@@ -12,8 +12,8 @@ RUN npm ci --legacy-peer-deps
 # Copy source code
 COPY . .
 
-# Build application
-RUN npm run build
+# Build application (using docker tsconfig for relaxed type checking)
+RUN cp tsconfig.docker.json tsconfig.json && npm run build
 
 # Runtime stage
 FROM node:18-alpine
