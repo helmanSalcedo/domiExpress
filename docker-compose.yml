@@ -1,52 +1,97 @@
 version: '3.9'
 
+# Professional Docker Compose for DomiExpress - Multi-environment setup
+# Supports: Development, Testing, Production
+
 services:
+  # ============================================================================
+  # PostgreSQL - Main Database (Production/Development)
+  # ============================================================================
   postgres:
     image: postgres:15-alpine
     container_name: domiexpress_postgres
+    restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
     environment:
-      POSTGRES_USER: domiexpress
-      POSTGRES_PASSWORD: domiexpress_dev_pass
-      POSTGRES_DB: domiexpress_dev
-      POSTGRES_INITDB_ARGS: "-c shared_preload_libraries=pg_stat_statements"
+      POSTGRES_USER: ${DB_USER:-domiexpress}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-domiexpress_dev_pass}
+      POSTGRES_DB: ${DB_NAME:-domiexpress_dev}
+      POSTGRES_INITDB_ARGS: "-c shared_preload_libraries=pg_stat_statements -c max_connections=200"
+      TZ: UTC
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U domiexpress"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-domiexpress}"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
     networks:
       - domiexpress_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
 
+  # ============================================================================
+  # PostgreSQL - Test Database (Isolated for testing)
+  # ============================================================================
   postgres_test:
     image: postgres:15-alpine
     container_name: domiexpress_postgres_test
+    restart: unless-stopped
     ports:
-      - "5433:5432"
+      - "${TEST_DB_PORT:-5433}:5432"
     environment:
-      POSTGRES_USER: domiexpress
-      POSTGRES_PASSWORD: domiexpress_test_pass
-      POSTGRES_DB: domiexpress_test
+      POSTGRES_USER: ${DB_USER:-domiexpress}
+      POSTGRES_PASSWORD: ${TEST_DB_PASSWORD:-domiexpress_test_pass}
+      POSTGRES_DB: ${TEST_DB_NAME:-domiexpress_test}
+      TZ: UTC
     volumes:
       - postgres_test_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U domiexpress"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-domiexpress}"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
     networks:
       - domiexpress_network
+    profiles:
+      - test
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
+  # ============================================================================
+  # Redis - Cache & Queue (Production/Development)
+  # ============================================================================
   redis:
     image: redis:7-alpine
     container_name: domiexpress_redis
+    restart: unless-stopped
     ports:
-      - "6379:6379"
-    command: redis-server --appendonly yes --appendfsync everysec
+      - "${REDIS_PORT:-6379}:6379"
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --requirepass ${REDIS_PASSWORD:-}
     volumes:
       - redis_data:/data
     healthcheck:
@@ -54,23 +99,203 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
     networks:
       - domiexpress_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
 
+  # ============================================================================
+  # Redis - Test Instance (Isolated for testing)
+  # ============================================================================
   redis_test:
     image: redis:7-alpine
     container_name: domiexpress_redis_test
+    restart: unless-stopped
     ports:
-      - "6380:6379"
+      - "${TEST_REDIS_PORT:-6380}:6379"
     command: redis-server
     networks:
       - domiexpress_network
+    profiles:
+      - test
 
+  # ============================================================================
+  # NestJS Application Server
+  # ============================================================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NODE_ENV: ${NODE_ENV:-development}
+    container_name: domiexpress_app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    environment:
+      # Application
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3000
+
+      # Database
+      DATABASE_URL: postgresql://${DB_USER:-domiexpress}:${DB_PASSWORD:-domiexpress_dev_pass}@postgres:5432/${DB_NAME:-domiexpress_dev}
+
+      # Redis
+      REDIS_URL: redis://${REDIS_PASSWORD:+:${REDIS_PASSWORD}@}redis:6379
+
+      # Security
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production-min-32-chars-1234567890}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-24h}
+
+      # Firebase
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID}
+      FIREBASE_PRIVATE_KEY_ID: ${FIREBASE_PRIVATE_KEY_ID}
+      FIREBASE_PRIVATE_KEY: ${FIREBASE_PRIVATE_KEY}
+      FIREBASE_CLIENT_EMAIL: ${FIREBASE_CLIENT_EMAIL}
+      FIREBASE_CLIENT_ID: ${FIREBASE_CLIENT_ID}
+      FIREBASE_MESSAGING_SENDER_ID: ${FIREBASE_MESSAGING_SENDER_ID}
+      FIREBASE_VAPID_KEY: ${FIREBASE_VAPID_KEY}
+
+      # CORS & API
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3001,http://localhost:3000}
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+
+      # Rate Limiting
+      RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-900000}
+      RATE_LIMIT_MAX_REQUESTS: ${RATE_LIMIT_MAX_REQUESTS:-100}
+
+      # External Services
+      WOMPI_ENVIRONMENT: ${WOMPI_ENVIRONMENT:-test}
+      WOMPI_PRIVATE_KEY: ${WOMPI_PRIVATE_KEY}
+      WOMPI_PUBLIC_KEY: ${WOMPI_PUBLIC_KEY}
+
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
+      SENDGRID_FROM_EMAIL: ${SENDGRID_FROM_EMAIL}
+
+      WHATSAPP_API_TOKEN: ${WHATSAPP_API_TOKEN}
+      WHATSAPP_PHONE_NUMBER_ID: ${WHATSAPP_PHONE_NUMBER_ID}
+      WHATSAPP_BUSINESS_ACCOUNT_ID: ${WHATSAPP_BUSINESS_ACCOUNT_ID}
+
+      CLAUDE_API_KEY: ${CLAUDE_API_KEY}
+      CLAUDE_MODEL: ${CLAUDE_MODEL:-claude-opus-5}
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    volumes:
+      - ./src:/app/src:ro
+      - ./prisma:/app/prisma:ro
+      - /app/node_modules
+
+    networks:
+      - domiexpress_network
+
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          cpus: '1'
+          memory: 512M
+
+  # ============================================================================
+  # pgAdmin - PostgreSQL Management UI (Development only)
+  # ============================================================================
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: domiexpress_pgadmin
+    restart: unless-stopped
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@domiexpress.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin_dev_pass}
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - domiexpress_network
+    profiles:
+      - dev
+      - full
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+    depends_on:
+      - postgres
+
+  # ============================================================================
+  # Redis Commander - Redis Management UI (Development only)
+  # ============================================================================
+  redis_commander:
+    image: rediscommander/redis-commander:latest
+    container_name: domiexpress_redis_commander
+    restart: unless-stopped
+    ports:
+      - "${REDIS_COMMANDER_PORT:-8081}:8081"
+    environment:
+      REDIS_HOSTS: local:redis:6379${REDIS_PASSWORD:+:0:${REDIS_PASSWORD}}
+    networks:
+      - domiexpress_network
+    profiles:
+      - dev
+      - full
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+    depends_on:
+      - redis
+
+# ============================================================================
+# Volumes
+# ============================================================================
 volumes:
   postgres_data:
+    driver: local
   postgres_test_data:
+    driver: local
   redis_data:
+    driver: local
+  pgadmin_data:
+    driver: local
 
+# ============================================================================
+# Networks
+# ============================================================================
 networks:
   domiexpress_network:
     driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: br_domiexpress
