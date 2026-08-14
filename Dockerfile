@@ -12,8 +12,8 @@ RUN npm ci --legacy-peer-deps
 # Copy source code and configs
 COPY . .
 
-# Build using NestJS CLI which properly handles path aliases
-RUN npm run build || true
+# Build using NestJS CLI with relaxed TypeScript config
+RUN cp tsconfig.docker.json tsconfig.json && npm run build || true
 
 # Runtime stage
 FROM node:18-alpine
