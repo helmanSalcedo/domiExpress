@@ -20,9 +20,9 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Install production dependencies only with legacy peer deps
+# Install dependencies with legacy peer deps (includes tsconfig-paths for path resolution)
 COPY package*.json ./
-RUN npm ci --omit=dev --legacy-peer-deps
+RUN npm ci --legacy-peer-deps
 
 # Copy built application from builder
 COPY --from=builder /app/dist ./dist
