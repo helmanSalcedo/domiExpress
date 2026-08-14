@@ -12,18 +12,15 @@ export class NotificationsController {
 
   @Post('register-device')
   @UseGuards(JwtAuthGuard)
-  async registerDevice(
-    @Request() req,
-    @Body() body: { token: string },
-  ) {
-    const userId = req.user.id;
+  async registerDevice(@Request() req, @Body() body: { token: string }) {
+    const _userId = req.user.id;
 
     if (!body.token) {
       return { success: false, message: 'Token is required' };
     }
 
     // TODO: Store token in database
-    // await this.userService.addFCMToken(userId, body.token);
+    // await this.userService.addFCMToken(_userId, body.token);
 
     return {
       success: true,
@@ -33,14 +30,11 @@ export class NotificationsController {
 
   @Post('unregister-device')
   @UseGuards(JwtAuthGuard)
-  async unregisterDevice(
-    @Request() req,
-    @Body() body: { token: string },
-  ) {
-    const userId = req.user.id;
+  async unregisterDevice(@Request() req, @Body() _body: { token: string }) {
+    const _userId = req.user.id;
 
     // TODO: Remove token from database
-    // await this.userService.removeFCMToken(userId, body.token);
+    // await this.userService.removeFCMToken(_userId, _body.token);
 
     return {
       success: true,
@@ -65,13 +59,10 @@ export class NotificationsController {
       };
     }
 
-    const result = await this.pushService.sendPushNotification(
-      body.deviceToken,
-      {
-        title: body.title,
-        body: body.body,
-      },
-    );
+    const result = await this.pushService.sendPushNotification(body.deviceToken, {
+      title: body.title,
+      body: body.body,
+    });
 
     return result;
   }
@@ -85,16 +76,11 @@ export class NotificationsController {
       topic: string;
     },
   ) {
-    const success = await this.pushService.subscribeToTopic(
-      body.deviceToken,
-      body.topic,
-    );
+    const success = await this.pushService.subscribeToTopic(body.deviceToken, body.topic);
 
     return {
       success,
-      message: success
-        ? `Subscribed to topic: ${body.topic}`
-        : 'Failed to subscribe to topic',
+      message: success ? `Subscribed to topic: ${body.topic}` : 'Failed to subscribe to topic',
     };
   }
 
@@ -107,10 +93,7 @@ export class NotificationsController {
       topic: string;
     },
   ) {
-    const success = await this.pushService.unsubscribeFromTopic(
-      body.deviceToken,
-      body.topic,
-    );
+    const success = await this.pushService.unsubscribeFromTopic(body.deviceToken, body.topic);
 
     return {
       success,

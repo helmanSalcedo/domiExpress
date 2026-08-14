@@ -55,7 +55,7 @@ export class EmailService {
 
       this.logger.log(`📧 Sending email to ${to}: ${subject}`);
 
-      const response = await this.client.post('/mail/send', {
+      const _response = await this.client.post('/mail/send', {
         personalizations: [
           {
             to: [{ email: to }],
@@ -95,13 +95,13 @@ export class EmailService {
         <h1>¡Pedido Confirmado!</h1>
         <p>Hola,</p>
         <p>Tu pedido <strong>#{{orderId}}</strong> ha sido confirmado.</p>
-        <p><strong>Monto total:</strong> ${{amount}}</p>
+        <p><strong>Monto total:</strong> ${{ amount }}</p>
         <p>Tu pedido será entregado en los próximos 30-45 minutos.</p>
         <p>Puedes seguir tu pedido en tiempo real en la app.</p>
         <hr>
         <p>DomiExpress 🚚</p>
       `,
-      text: `Pedido confirmado: #{{orderId}}\nMonto: ${{amount}}\n\nSigue tu pedido en la app.`,
+      text: `Pedido confirmado: #{{orderId}}\nMonto: ${{ amount }}\n\nSigue tu pedido en la app.`,
     };
 
     const result = await this.sendEmail(email, template, {
@@ -112,7 +112,12 @@ export class EmailService {
     return result.success;
   }
 
-  async sendDeliveryNotification(email: string, orderId: string, driverName: string, phone: string): Promise<boolean> {
+  async sendDeliveryNotification(
+    email: string,
+    orderId: string,
+    driverName: string,
+    phone: string,
+  ): Promise<boolean> {
     const template: EmailTemplate = {
       subject: '¡Tu pedido está en camino! 🚗 - DomiExpress',
       html: `
@@ -147,13 +152,13 @@ export class EmailService {
         <h1>¡Pedido Entregado!</h1>
         <p>Hola,</p>
         <p>Tu pedido <strong>#{{orderId}}</strong> ha sido entregado exitosamente.</p>
-        <p><strong>Monto pagado:</strong> ${{amount}}</p>
+        <p><strong>Monto pagado:</strong> ${{ amount }}</p>
         <p>¿Te gustaría calificar tu experiencia? Entra a la app y déjanos tu reseña.</p>
         <p>¡Gracias por usar DomiExpress! 🙏</p>
         <hr>
         <p>DomiExpress 🚚</p>
       `,
-      text: `Pedido entregado: #{{orderId}}\nMonto: ${{amount}}\n\nCalifica tu experiencia en la app.`,
+      text: `Pedido entregado: #{{orderId}}\nMonto: ${{ amount }}\n\nCalifica tu experiencia en la app.`,
     };
 
     const result = await this.sendEmail(email, template, {
@@ -164,7 +169,12 @@ export class EmailService {
     return result.success;
   }
 
-  async sendPaymentReceipt(email: string, orderId: string, amount: number, paymentMethod: string): Promise<boolean> {
+  async sendPaymentReceipt(
+    email: string,
+    orderId: string,
+    amount: number,
+    paymentMethod: string,
+  ): Promise<boolean> {
     const template: EmailTemplate = {
       subject: 'Recibo de Pago - DomiExpress',
       html: `
@@ -178,7 +188,7 @@ export class EmailService {
           </tr>
           <tr>
             <td style="border: 1px solid #ddd; padding: 10px;"><strong>Monto:</strong></td>
-            <td style="border: 1px solid #ddd; padding: 10px;">${{amount}}</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">${{ amount }}</td>
           </tr>
           <tr>
             <td style="border: 1px solid #ddd; padding: 10px;"><strong>Método de Pago:</strong></td>
@@ -192,7 +202,7 @@ export class EmailService {
         <hr>
         <p>DomiExpress 🚚</p>
       `,
-      text: `Recibo de Pago\nPedido: {{orderId}}\nMonto: ${{amount}}\nMétodo: {{paymentMethod}}\nEstado: Aprobado`,
+      text: `Recibo de Pago\nPedido: {{orderId}}\nMonto: ${{ amount }}\nMétodo: {{paymentMethod}}\nEstado: Aprobado`,
     };
 
     const result = await this.sendEmail(email, template, {
@@ -232,14 +242,14 @@ export class EmailService {
           </tr>
           <tr>
             <td style="border: 1px solid #ddd; padding: 10px;"><strong>Monto:</strong></td>
-            <td style="border: 1px solid #ddd; padding: 10px;">${{amount}}</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">${{ amount }}</td>
           </tr>
         </table>
         <p><a href="https://dashboard.domiexpress.co/orders/{{orderId}}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Ver Orden</a></p>
         <hr>
         <p>DomiExpress 🚚</p>
       `,
-      text: `Nueva Orden\nOrden: {{orderId}}\nCliente: {{customerName}}\nÍtems: {{items}}\nMonto: ${{amount}}`,
+      text: `Nueva Orden\nOrden: {{orderId}}\nCliente: {{customerName}}\nÍtems: {{items}}\nMonto: ${{ amount }}`,
     };
 
     const result = await this.sendEmail(email, template, {

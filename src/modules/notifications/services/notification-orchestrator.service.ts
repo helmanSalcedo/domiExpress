@@ -55,11 +55,7 @@ export class NotificationOrchestratorService {
 
     if (prefs.whatsappNotifications && channels.phone) {
       promises.push(
-        this.whatsappService.sendPaymentApprovedNotification(
-          channels.phone,
-          orderId,
-          amount,
-        ),
+        this.whatsappService.sendPaymentApprovedNotification(channels.phone, orderId, amount),
       );
     }
 
@@ -79,9 +75,7 @@ export class NotificationOrchestratorService {
     const promises = [];
 
     if (prefs.emailNotifications && channels.email) {
-      promises.push(
-        this.emailService.sendOrderConfirmation(channels.email, orderId, amount),
-      );
+      promises.push(this.emailService.sendOrderConfirmation(channels.email, orderId, amount));
     }
 
     if (prefs.pushNotifications && channels.deviceToken) {
@@ -92,11 +86,7 @@ export class NotificationOrchestratorService {
 
     if (prefs.whatsappNotifications && channels.phone) {
       promises.push(
-        this.whatsappService.sendPaymentApprovedNotification(
-          channels.phone,
-          orderId,
-          amount,
-        ),
+        this.whatsappService.sendPaymentApprovedNotification(channels.phone, orderId, amount),
       );
     }
 
@@ -164,10 +154,7 @@ export class NotificationOrchestratorService {
 
     if (prefs.pushNotifications && channels.deviceToken) {
       promises.push(
-        this.pushService.sendDeliveryStartedNotification(
-          channels.deviceToken,
-          driverName,
-        ),
+        this.pushService.sendDeliveryStartedNotification(channels.deviceToken, driverName),
       );
     }
 
@@ -198,27 +185,18 @@ export class NotificationOrchestratorService {
     const promises = [];
 
     if (prefs.emailNotifications && channels.email) {
-      promises.push(
-        this.emailService.sendDeliveryCompleted(channels.email, orderId, amount),
-      );
+      promises.push(this.emailService.sendDeliveryCompleted(channels.email, orderId, amount));
     }
 
     if (prefs.pushNotifications && channels.deviceToken) {
       promises.push(
-        this.pushService.sendDeliveryCompletedNotification(
-          channels.deviceToken,
-          orderId,
-        ),
+        this.pushService.sendDeliveryCompletedNotification(channels.deviceToken, orderId),
       );
     }
 
     if (prefs.whatsappNotifications && channels.phone) {
       promises.push(
-        this.whatsappService.sendDeliveryCompletedNotification(
-          channels.phone,
-          orderId,
-          amount,
-        ),
+        this.whatsappService.sendDeliveryCompletedNotification(channels.phone, orderId, amount),
       );
     }
 

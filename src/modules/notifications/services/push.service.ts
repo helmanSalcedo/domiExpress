@@ -31,7 +31,7 @@ export class PushService {
         };
 
         admin.initializeApp({
-          credential: admin.credential.cert(serviceAccount as any),
+          credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
           projectId: process.env.FIREBASE_PROJECT_ID,
         });
         this.messaging = admin.messaging();
@@ -146,10 +146,7 @@ export class PushService {
     return result.success;
   }
 
-  async sendDeliveryStartedNotification(
-    deviceToken: string,
-    driverName: string,
-  ): Promise<boolean> {
+  async sendDeliveryStartedNotification(deviceToken: string, driverName: string): Promise<boolean> {
     const result = await this.sendPushNotification(deviceToken, {
       title: '¡Tu pedido está en camino! 📍',
       body: `${driverName} está en camino con tu pedido. Sigue en tiempo real.`,
@@ -162,10 +159,7 @@ export class PushService {
     return result.success;
   }
 
-  async sendDeliveryCompletedNotification(
-    deviceToken: string,
-    orderId: string,
-  ): Promise<boolean> {
+  async sendDeliveryCompletedNotification(deviceToken: string, orderId: string): Promise<boolean> {
     const result = await this.sendPushNotification(deviceToken, {
       title: '¡Pedido Entregado! ✅',
       body: `Tu pedido #${orderId} fue entregado. ¡Califica tu experiencia!`,

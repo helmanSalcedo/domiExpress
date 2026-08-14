@@ -28,7 +28,9 @@ export class WhatsAppService {
     });
   }
 
-  async sendNotification(event: NotificationEvent): Promise<{ success: boolean; messageId?: string }> {
+  async sendNotification(
+    event: NotificationEvent,
+  ): Promise<{ success: boolean; messageId?: string }> {
     try {
       if (!this.apiToken || !this.phoneNumberId) {
         this.logger.warn('⚠️ WhatsApp credentials not configured, skipping notification');
@@ -38,9 +40,7 @@ export class WhatsAppService {
       const message = this.buildMessage(event);
       const formattedPhone = this.formatPhoneNumber(event.recipientPhone);
 
-      this.logger.log(
-        `📱 Sending WhatsApp notification to ${formattedPhone}: ${event.type}`,
-      );
+      this.logger.log(`📱 Sending WhatsApp notification to ${formattedPhone}: ${event.type}`);
 
       const response = await this.client.post(`/${this.phoneNumberId}/messages`, {
         messaging_product: 'whatsapp',
