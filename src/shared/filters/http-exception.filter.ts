@@ -25,13 +25,13 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const traceId = (request.headers['x-trace-id'] as string) || this.generateTraceId();
 
     let errorMessage: string = 'Internal server error';
-    let errorType = 'HttpException';
+    let errorType: string | number = 'HttpException';
 
     if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
       const responseObject = exceptionResponse as any;
       errorMessage = responseObject.message || errorMessage;
       errorType = responseObject.error || status;
-    } else {
+    } else if (typeof exceptionResponse === 'string') {
       errorMessage = exceptionResponse;
     }
 
