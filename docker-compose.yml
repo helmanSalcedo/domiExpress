@@ -251,8 +251,9 @@ services:
       options:
         max-size: "5m"
         max-file: "3"
-    depends_on:
-      - postgres
+    # postgres removed - using local database
+    # depends_on:
+    #   - postgres
 
   # ============================================================================
   # Redis Commander - Redis Management UI (Development only)
