@@ -16,17 +16,30 @@ export class PushService {
   private readonly messaging: admin.messaging.Messaging;
 
   constructor() {
-    // Initialize Firebase Admin SDK if configured
     if (process.env.FIREBASE_PROJECT_ID) {
       try {
-        admin.initializeApp({
+        const serviceAccount = {
           projectId: process.env.FIREBASE_PROJECT_ID,
-          storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+          privateKeyId: process.env.FIREBASE_PRIVATE_KEY_ID,
+          privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+          clientId: process.env.FIREBASE_CLIENT_ID,
+          authUri: 'https://accounts.google.com/o/oauth2/auth',
+          tokenUri: 'https://oauth2.googleapis.com/token',
+          authProviderX509CertUrl: 'https://www.googleapis.com/oauth2/v1/certs',
+          clientX509CertUrl: `https://www.googleapis.com/robot/v1/metadata/x509/${process.env.FIREBASE_CLIENT_EMAIL}`,
+        };
+
+        admin.initializeApp({
+          credential: admin.credential.cert(serviceAccount as any),
+          projectId: process.env.FIREBASE_PROJECT_ID,
         });
         this.messaging = admin.messaging();
-        this.logger.log('✅ Firebase Admin SDK initialized');
+        this.logger.log('✅ Firebase Admin SDK initialized successfully');
       } catch (error) {
-        this.logger.warn('⚠️ Firebase Admin SDK not configured');
+        this.logger.error(
+          `⚠️ Firebase initialization failed: ${error instanceof Error ? error.message : error}`,
+        );
         this.messaging = null;
       }
     } else {
