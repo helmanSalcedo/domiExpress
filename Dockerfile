@@ -12,8 +12,8 @@ RUN npm ci --legacy-peer-deps
 # Copy source code and configs
 COPY . .
 
-# Build using NestJS with webpack support for path aliases
-RUN npm run build || echo "Initial build failed, build dir should still be created" && test -f dist/main.js || echo "Warning: main.js not found"
+# Build application - must succeed to ensure path aliases are resolved
+RUN npm run build
 
 # Runtime stage
 FROM node:18-alpine
