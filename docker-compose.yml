@@ -7,42 +7,44 @@ services:
   # ============================================================================
   # PostgreSQL - Main Database (Production/Development)
   # ============================================================================
-  postgres:
-    image: postgres:15-alpine
-    container_name: domiexpress_postgres
-    restart: unless-stopped
-    ports:
-      - "${DB_PORT:-5432}:5432"
-    environment:
-      POSTGRES_USER: ${DB_USER:-domiexpress}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-domiexpress_dev_pass}
-      POSTGRES_DB: ${DB_NAME:-domiexpress_dev}
-      POSTGRES_INITDB_ARGS: ""
-      TZ: UTC
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-domiexpress}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    networks:
-      - domiexpress_network
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-    deploy:
-      resources:
-        limits:
-          cpus: '1'
-          memory: 512M
-        reservations:
-          cpus: '0.5'
-          memory: 256M
+  # PostgreSQL disabled - using local database
+  # To enable PostgreSQL in Docker, uncomment the section below and update depends_on in app service
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: domiexpress_postgres
+  #   restart: unless-stopped
+  #   ports:
+  #     - "${DB_PORT:-5432}:5432"
+  #   environment:
+  #     POSTGRES_USER: ${DB_USER:-domiexpress}
+  #     POSTGRES_PASSWORD: ${DB_PASSWORD:-domiexpress_dev_pass}
+  #     POSTGRES_DB: ${DB_NAME:-domiexpress_dev}
+  #     POSTGRES_INITDB_ARGS: ""
+  #     TZ: UTC
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #     - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-domiexpress}"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #     start_period: 10s
+  #   networks:
+  #     - domiexpress_network
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "10m"
+  #       max-file: "3"
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '1'
+  #         memory: 512M
+  #       reservations:
+  #         cpus: '0.5'
+  #         memory: 256M
 
   # ============================================================================
   # PostgreSQL - Test Database (Isolated for testing)
@@ -148,8 +150,8 @@ services:
       NODE_ENV: ${NODE_ENV:-development}
       PORT: 3000
 
-      # Database
-      DATABASE_URL: postgresql://${DB_USER:-domiexpress}:${DB_PASSWORD:-domiexpress_dev_pass}@postgres:5432/${DB_NAME:-domiexpress_dev}
+      # Database - connects to local PostgreSQL (not Docker container)
+      DATABASE_URL: postgresql://${DB_USER:-domiexpress}:${DB_PASSWORD:-domiexpress_dev_pass}@${DB_HOST:-host.docker.internal}:${DB_PORT:-5432}/${DB_NAME:-domiexpress_dev}
 
       # Redis
       REDIS_URL: redis://${REDIS_PASSWORD:+:${REDIS_PASSWORD}@}redis:6379
@@ -191,10 +193,9 @@ services:
       CLAUDE_MODEL: ${CLAUDE_MODEL:-claude-opus-5}
 
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
+      # postgres removed - using local database
 
     volumes:
       - ./src:/app/src:ro
