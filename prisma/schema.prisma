@@ -595,3 +595,65 @@ model ChatMessage {
 
 // Relación inversa en Customer
 // (agregar al modelo Customer después)
+
+// ============================================================================
+// WHATSAPP CONVERSATIONS (Multi-channel Chat System)
+// ============================================================================
+
+model WhatsAppConversation {
+  id                        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  entityType                String   @db.VarChar(50) // COMMERCE, CUSTOMER, DRIVER
+  entityId                  String   @db.Uuid // FK polimórfica
+  channel                   String   @db.VarChar(50) // business, customer, driver
+  phone                     String   @unique @db.VarChar(20)
+  isRegistered              Boolean  @default(false)
+  conversationState         String   @default("WELCOME") @db.VarChar(50) // WELCOME, REGISTERING, ACTIVE, BLOCKED
+  context                   Json?    // Datos en progreso (ej: datos de registro parcial)
+  lastMessageAt             DateTime? @db.Timestamptz()
+  createdAt                 DateTime @default(now()) @db.Timestamptz()
+  updatedAt                 DateTime @updatedAt @db.Timestamptz()
+
+  // Relations
+  messages                  WhatsAppMessage[]
+
+  @@unique([entityType, entityId])
+  @@index([phone])
+  @@index([channel])
+  @@index([entityType])
+  @@index([isRegistered])
+  @@index([conversationState])
+  @@index([createdAt])
+}
+
+model WhatsAppMessage {
+  id                        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  conversationId            String   @db.Uuid
+  role                      String   @db.VarChar(50) // USER, ASSISTANT
+  message                   String
+  metadata                  Json?
+  createdAt                 DateTime @default(now()) @db.Timestamptz()
+
+  // Relations
+  conversation              WhatsAppConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([role])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// WHATSAPP EMULATOR (Testing & Development)
+// ============================================================================
+
+model EmulatorMessage {
+  id                        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  channel                   String   @db.VarChar(50) // business, customer, driver
+  message                   String
+  phone                     String   @db.VarChar(20)
+  type                      String   @db.VarChar(50) // sent, received, notification
+  timestamp                 DateTime @default(now()) @db.Timestamptz()
+  metadata                  Json?
+
+  @@index([channel])
+  @@index([timestamp])
+}

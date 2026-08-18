@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EmailService } from './email.service';
 import { PushService } from './push.service';
-import { WhatsAppService } from './whatsapp.service';
 import { NotificationPreferencesService } from './notification-preferences.service';
 
 export interface UserNotificationChannels {
@@ -26,7 +25,6 @@ export class NotificationOrchestratorService {
   constructor(
     private emailService: EmailService,
     private pushService: PushService,
-    private whatsappService: WhatsAppService,
     private preferencesService: NotificationPreferencesService,
   ) {}
 
@@ -50,12 +48,6 @@ export class NotificationOrchestratorService {
     if (prefs.pushNotifications && channels.deviceToken) {
       promises.push(
         this.pushService.sendOrderConfirmationNotification(channels.deviceToken, orderId, amount),
-      );
-    }
-
-    if (prefs.whatsappNotifications && channels.phone) {
-      promises.push(
-        this.whatsappService.sendPaymentApprovedNotification(channels.phone, orderId, amount),
       );
     }
 
@@ -84,11 +76,6 @@ export class NotificationOrchestratorService {
       );
     }
 
-    if (prefs.whatsappNotifications && channels.phone) {
-      promises.push(
-        this.whatsappService.sendPaymentApprovedNotification(channels.phone, orderId, amount),
-      );
-    }
 
     await Promise.allSettled(promises);
     this.logger.log(`✅ PAYMENT_APPROVED notifications sent to user ${userId}`);
@@ -118,12 +105,6 @@ export class NotificationOrchestratorService {
 
     if (prefs.whatsappNotifications && channels.phone) {
       promises.push(
-        this.whatsappService.sendDeliveryStartedNotification(
-          channels.phone,
-          driverName,
-          phone,
-          driverId,
-        ),
       );
     }
 
@@ -160,12 +141,6 @@ export class NotificationOrchestratorService {
 
     if (prefs.whatsappNotifications && channels.phone) {
       promises.push(
-        this.whatsappService.sendDeliveryStartedNotification(
-          channels.phone,
-          driverName,
-          'phone',
-          'delivery-123',
-        ),
       );
     }
 
@@ -196,7 +171,6 @@ export class NotificationOrchestratorService {
 
     if (prefs.whatsappNotifications && channels.phone) {
       promises.push(
-        this.whatsappService.sendDeliveryCompletedNotification(channels.phone, orderId, amount),
       );
     }
 

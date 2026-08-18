@@ -24,7 +24,7 @@ export class AdminAnalyticsService {
       where: dateFilter ? { createdAt: dateFilter } : {},
     });
 
-    const totalRevenue = orders.reduce((sum: number, order: any) => sum + Number(order.totalAmount), 0);
+    const totalRevenue = orders.reduce((sum: number, order: any): number => sum + Number(order.totalAmount), 0);
 
     // Total deliveries completed
     const completedDeliveries = await this.prisma.delivery.count({
@@ -63,7 +63,7 @@ export class AdminAnalyticsService {
       completedDeliveries,
       activeDrivers,
       averageOrderValue: Math.round(avgOrderValue),
-      ordersByStatus: ordersByStatus.map(s => ({
+      ordersByStatus: ordersByStatus.map((s: any) => ({
         status: s.status,
         count: s._count.id,
       })),
@@ -92,7 +92,7 @@ export class AdminAnalyticsService {
     // Group by day
     const dailyRevenue = new Map<string, number>();
 
-    orders.forEach(order => {
+    orders.forEach((order: any) => {
       const dateKey = order.createdAt.toISOString().split('T')[0];
       const current = dailyRevenue.get(dateKey) || 0;
       dailyRevenue.set(dateKey, current + Number(order.totalAmount));
@@ -126,12 +126,12 @@ export class AdminAnalyticsService {
     const drivers = await this.prisma.driver.findMany();
     const avgRating =
       drivers.length > 0
-        ? drivers.reduce((sum, d) => sum + Number(d.rating), 0) / drivers.length
+        ? drivers.reduce((sum: number, d: any) => sum + Number(d.rating), 0) / drivers.length
         : 0;
 
     const avgDeliveries =
       drivers.length > 0
-        ? drivers.reduce((sum, d) => sum + d.totalDeliveries, 0) / drivers.length
+        ? drivers.reduce((sum: number, d: any) => sum + d.totalDeliveries, 0) / drivers.length
         : 0;
 
     return {
@@ -141,7 +141,7 @@ export class AdminAnalyticsService {
       suspendedDrivers,
       averageRating: Math.round(avgRating * 10) / 10,
       averageDeliveries: Math.round(avgDeliveries),
-      topDrivers: topDrivers.map(d => ({
+      topDrivers: topDrivers.map((d: any) => ({
         id: d.id,
         name: d.fullName,
         rating: Number(d.rating),
@@ -168,7 +168,7 @@ export class AdminAnalyticsService {
     return {
       totalCommerce,
       verifiedCommerce,
-      topCommerce: topCommerce.map((c: any) => ({
+      topCommerce: topCommerce.map((c: any): any => ({
         commerceId: c.commerceId,
         orderCount: c._count?.id || 0,
         totalRevenue: c._sum?.totalAmount ? Math.round(Number(c._sum.totalAmount)) : 0,
@@ -208,7 +208,7 @@ export class AdminAnalyticsService {
       totalCustomers,
       activeCustomers,
       averageOrdersPerCustomer: Math.round(avgOrdersPerCustomer * 100) / 100,
-      topMunicipalities: customersByMunicipality.map(c => ({
+      topMunicipalities: customersByMunicipality.map((c: any) => ({
         municipalityId: c.municipalityId,
         customerCount: c._count.id,
       })),
@@ -232,7 +232,7 @@ export class AdminAnalyticsService {
       { orders: number; revenue: number; statuses: Record<string, number> }
     >();
 
-    orders.forEach(order => {
+    orders.forEach((order: any) => {
       const dateKey = order.createdAt.toISOString().split('T')[0];
       const current = dailyTrends.get(dateKey) || {
         orders: 0,
@@ -248,8 +248,8 @@ export class AdminAnalyticsService {
     });
 
     return Array.from(dailyTrends.entries())
-      .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
-      .map(([date, data]) => ({
+      .sort(([dateA]: any, [dateB]: any) => dateA.localeCompare(dateB))
+      .map(([date, data]: any) => ({
         date,
         orderCount: data.orders,
         revenue: Math.round(data.revenue),

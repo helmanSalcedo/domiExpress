@@ -43,7 +43,7 @@ export class ChatMessageService {
       take: limit,
     });
 
-    return messages.map(msg => this.mapToDto(msg));
+    return messages.map((msg: any) => this.mapToDto(msg));
   }
 
   async getRecentMessages(chatSessionId: string, count: number = 10): Promise<ChatMessageDto[]> {
@@ -53,7 +53,7 @@ export class ChatMessageService {
       take: count,
     });
 
-    return messages.reverse().map(msg => this.mapToDto(msg));
+    return messages.reverse().map((msg: any) => this.mapToDto(msg));
   }
 
   private mapToDto(message: any): ChatMessageDto {

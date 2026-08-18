@@ -27,6 +27,7 @@
     "db:push": "prisma db push",
     "db:pull": "prisma db pull",
     "db:seed": "node --loader ts-node/esm prisma/seed.ts",
+    "seed:professional": "bash scripts/seed.sh",
     "db:reset": "prisma migrate reset",
     "db:studio": "prisma studio",
     "docker:up": "docker-compose up -d",

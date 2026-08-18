@@ -2,6 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ChatSessionService } from './chat-session.service';
 import { ChatMessageService } from './chat-message.service';
 import { ClaudeIntegrationService } from './claude-integration.service';
+import { IntentAnalyzerService } from './intent-analyzer.service';
+import { PresetResponsesService } from './preset-responses.service';
 import { ChatSessionDto, ChatResponseDto } from '../dto/chat-session.dto';
 
 @Injectable()
@@ -12,6 +14,8 @@ export class ChatbotService {
     private sessionService: ChatSessionService,
     private messageService: ChatMessageService,
     private claudeService: ClaudeIntegrationService,
+    private intentAnalyzer: IntentAnalyzerService,
+    private presetResponses: PresetResponsesService,
   ) {}
 
   async processMessage(
@@ -20,6 +24,19 @@ export class ChatbotService {
     municipalityId?: string,
   ): Promise<ChatResponseDto> {
     try {
+      // Validar entrada
+      if (!customerId || !customerId.trim()) {
+        throw new Error('customerId is required');
+      }
+      if (!content || !content.trim()) {
+        throw new Error('Message content cannot be empty');
+      }
+      if (content.length > 2000) {
+        throw new Error('Message content exceeds maximum length of 2000 characters');
+      }
+
+      const sanitizedContent = content.trim();
+
       // Obtener o crear sesión activa
       let session = await this.sessionService.getActiveSession(customerId);
 
@@ -31,55 +48,120 @@ export class ChatbotService {
       }
 
       // Guardar mensaje del usuario
-      await this.messageService.createMessage(session.id, 'USER', content, {
+      await this.messageService.createMessage(session.id, 'USER', sanitizedContent, {
         source: 'WEBSOCKET',
       });
 
-      // Obtener historial reciente para contexto
-      const recentMessages = await this.messageService.getRecentMessages(session.id, 10);
+      // Analizar intención y prioridad
+      const intentAnalysis = this.intentAnalyzer.analyzeIntent(content);
 
-      // Preparar mensajes para Claude
-      const claudeMessages = recentMessages.map(msg => ({
-        role: msg.role.toLowerCase() as 'user' | 'assistant',
-        content: msg.content,
-      }));
+      this.logger.debug(
+        `Intent: ${intentAnalysis.intent}, Priority: ${intentAnalysis.priority}, Confidence: ${intentAnalysis.confidence}%`
+      );
 
-      // Procesar con Claude
-      const startTime = Date.now();
-      const claudeResult = await this.claudeService.processMessage(claudeMessages);
-      const processingTime = Date.now() - startTime;
+      // Intentar respuesta pre-configurada si aplica (solo si ALTA confianza)
+      let responseText: string;
+      let tokensUsed = 0;
+      let processingTime = 0;
+
+      const presetResponse = this.presetResponses.detectPresetResponse(sanitizedContent);
+
+      if (presetResponse && intentAnalysis.confidence > 0.85) {
+        const startTime = Date.now();
+        responseText = presetResponse.response;
+        processingTime = Date.now() - startTime;
+        this.logger.debug(`Using preset response for intent: ${intentAnalysis.intent} (${processingTime}ms)`);
+      } else {
+        // Obtener historial reciente para contexto
+        const recentMessages = await this.messageService.getRecentMessages(session.id, 10);
+
+        // Preparar mensajes para Claude con metadata de intención
+        const claudeMessages = recentMessages.map(msg => ({
+          role: msg.role.toLowerCase() as 'user' | 'assistant',
+          content: msg.content,
+        }));
+
+        // Enriquecer system prompt con contexto de intención
+        const enrichedSystemPrompt = this.getEnrichedSystemPrompt(intentAnalysis);
+
+        // Procesar con Claude
+        const startTime = Date.now();
+        const claudeResult = await this.claudeService.processMessage(claudeMessages, enrichedSystemPrompt);
+        processingTime = Date.now() - startTime;
+
+        responseText = claudeResult.response;
+        tokensUsed = claudeResult.tokens;
+
+        this.logger.debug(`Message processed with Claude in ${processingTime}ms (Priority: ${intentAnalysis.priority})`);
+      }
 
       // Guardar respuesta del asistente
       const assistantMessage = await this.messageService.createMessage(
         session.id,
         'ASSISTANT',
-        claudeResult.response,
+        responseText,
         {
           source: 'WEBSOCKET',
-          tokens: claudeResult.tokens,
-          processingTimeMs: processingTime,
+          tokens: tokensUsed,
+          metadata: {
+            intent: intentAnalysis.intent,
+            priority: intentAnalysis.priority,
+            confidence: intentAnalysis.confidence,
+          },
         },
       );
 
       // Actualizar sesión
       await this.sessionService.updateMessageCount(session.id);
 
-      this.logger.debug(`Message processed for customer ${customerId} in ${processingTime}ms`);
-
       return {
         sessionId: session.id,
         messageId: assistantMessage.id,
         response: assistantMessage.content,
         role: 'ASSISTANT',
-        tokens: claudeResult.tokens,
+        tokens: tokensUsed,
         processingTimeMs: processingTime,
         timestamp: assistantMessage.createdAt,
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(`Error processing message: ${message}`);
-      throw error;
+      return {
+        sessionId: '',
+        messageId: '',
+        response: 'Disculpa, estoy teniendo dificultades técnicas. Por favor intenta de nuevo o contacta a nuestro equipo de soporte.',
+        role: 'ASSISTANT',
+        tokens: 0,
+        processingTimeMs: 0,
+        timestamp: new Date(),
+        error: message,
+      } as any;
     }
+  }
+
+  private getEnrichedSystemPrompt(intentAnalysis: any): string {
+    const intentGuidance: Record<string, string> = {
+      TRACK_ORDER: 'Usuario quiere rastrear pedido → Solicita #pedido y proporciona estado',
+      COMPLAINT: 'Usuario con problema/queja → Empatiza, valida, ofrece solución',
+      DELIVERY_ISSUE: 'Problema de entrega → Investiga, ofrece reintento o compensación',
+      PAYMENT: 'Consulta de pago → Explica opciones, resuelve problemas',
+      RETURN: 'Devolver/cambiar producto → Explica proceso 30 días',
+      PRODUCT_INFO: 'Información de producto → Proporciona detalles disponibles',
+      GENERAL: 'Consulta general → Ofrece ayuda proactiva',
+    };
+
+    const urgency: Record<string, string> = {
+      HIGH: '⚠️ URGENTE - Resuelve rápido, ofrece soluciones concretas',
+      MEDIUM: 'Normal - Responde profesionalmente',
+      LOW: 'Informativo - Detallado pero sin prisa',
+    };
+
+    return `${this.claudeService.getDefaultSystemPrompt()}
+
+CONTEXTO ESPECÍFICO:
+${urgency[intentAnalysis.priority as string] || urgency.MEDIUM}
+Intención: ${intentAnalysis.intent} (confianza: ${Math.round(intentAnalysis.confidence)}%)
+Acción: ${intentGuidance[intentAnalysis.intent] || intentGuidance.GENERAL}`;
   }
 
   async createSession(customerId: string, municipalityId: string): Promise<ChatSessionDto> {

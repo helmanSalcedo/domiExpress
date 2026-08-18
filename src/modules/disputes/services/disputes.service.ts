@@ -1,11 +1,11 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@shared/database/prisma.service';
 import {
   CreateDisputeDto,
-  ResolveDisputeDto,
   DisputeResponseDto,
   DisputeStatsDto,
   DisputeStatus,
+  ResolveDisputeDto,
 } from '../dto/index';
 
 @Injectable()
@@ -59,7 +59,7 @@ export class DisputesService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return disputes.map(d => this.formatDispute(d));
+    return disputes.map((d: any) => this.formatDispute(d));
   }
 
   async listAllDisputes(
@@ -76,7 +76,7 @@ export class DisputesService {
       take,
     });
 
-    return disputes.map(d => this.formatDispute(d));
+    return disputes.map((d: any) => this.formatDispute(d));
   }
 
   async resolveDispute(disputeId: string, dto: ResolveDisputeDto): Promise<DisputeResponseDto> {
@@ -110,9 +110,11 @@ export class DisputesService {
 
     const allDisputes = await this.prisma.dispute.findMany({ where });
 
-    const openDisputes = allDisputes.filter(d => d.status === DisputeStatus.OPEN).length;
-    const resolvedDisputes = allDisputes.filter(d => d.status === DisputeStatus.RESOLVED).length;
-    const closedDisputes = allDisputes.filter(d => d.status === DisputeStatus.CLOSED).length;
+    const openDisputes = allDisputes.filter((d: any) => d.status === DisputeStatus.OPEN).length;
+    const resolvedDisputes = allDisputes.filter(
+      (d: any) => d.status === DisputeStatus.RESOLVED,
+    ).length;
+    const closedDisputes = allDisputes.filter((d: any) => d.status === DisputeStatus.CLOSED).length;
 
     let averageResolutionTime = 0;
     const resolvedWithTime = allDisputes.filter((d: any) => d.resolvedAt);

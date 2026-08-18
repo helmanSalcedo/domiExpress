@@ -28,7 +28,7 @@ export class AnalyticsService {
     });
 
     const totalOrders = orders.length;
-    const totalRevenue = orders.reduce((sum, o) => sum + Number(o.subtotal || 0), 0);
+    const totalRevenue = orders.reduce((sum: number, o: any) => sum + Number(o.subtotal || 0), 0);
     const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
     const activeCustomers = await this.prisma.customer.count({
@@ -87,7 +87,7 @@ export class AnalyticsService {
     });
 
     const totalOrders = orders.length;
-    const totalRevenue = orders.reduce((sum, o) => sum + Number(o.subtotal || 0), 0);
+    const totalRevenue = orders.reduce((sum: number, o: any) => sum + Number(o.subtotal || 0), 0);
     const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
     const deliveryWhere = municipalityId
@@ -100,14 +100,14 @@ export class AnalyticsService {
     });
 
     const totalDeliveries = deliveries.length;
-    const completedDeliveries = deliveries.filter(d => d.completedAt).length;
-    const failedDeliveries = deliveries.filter(d => d.status === 'FAILED').length;
+    const completedDeliveries = deliveries.filter((d: any) => d.completedAt).length;
+    const failedDeliveries = deliveries.filter((d: any) => d.status === 'FAILED').length;
 
     let averageDeliveryTime = 0;
-    const completedWithTime = deliveries.filter(d => d.actualDurationMinutes);
+    const completedWithTime = deliveries.filter((d: any) => d.actualDurationMinutes);
     if (completedWithTime.length > 0) {
       const totalTime = completedWithTime.reduce(
-        (sum, d) => sum + (d.actualDurationMinutes || 0),
+        (sum: number, d: any) => sum + (d.actualDurationMinutes || 0),
         0,
       );
       averageDeliveryTime = totalTime / completedWithTime.length;
@@ -169,7 +169,7 @@ export class AnalyticsService {
       where: whereClause,
     });
 
-    const totalRevenue = orders.reduce((sum, o) => sum + Number(o.subtotal || 0), 0);
+    const totalRevenue = orders.reduce((sum: number, o: any) => sum + Number(o.subtotal || 0), 0);
     const platformFees = totalRevenue * 0.1; // 10% platform fee
     const refundsIssued = 0; // TODO: Sum refunds from disputes
 
@@ -192,7 +192,7 @@ export class AnalyticsService {
     });
 
     const commercesWithStats = await Promise.all(
-      topCommerces.map(async c => {
+      topCommerces.map(async (c: any) => {
         const orders = await this.prisma.order.count({
           where: { commerces: { some: { id: c.id } } },
         });
@@ -200,7 +200,7 @@ export class AnalyticsService {
           where: { commerces: { some: { id: c.id } } },
           select: { subtotal: true },
         });
-        const revenue = orderData.reduce((sum, o) => sum + Number(o.subtotal || 0), 0);
+        const revenue = orderData.reduce((sum: number, o: any) => sum + Number(o.subtotal || 0), 0);
 
         return {
           commerceId: c.id,
@@ -220,7 +220,7 @@ export class AnalyticsService {
     });
 
     const driversWithStats = await Promise.all(
-      topDrivers.map(async d => {
+      topDrivers.map(async (d: any) => {
         const deliveries = await this.prisma.delivery.count({
           where: { driverId: d.id },
         });

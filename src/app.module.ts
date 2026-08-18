@@ -22,8 +22,11 @@ import { RatingsModule } from './modules/ratings/ratings.module';
 import { DisputesModule } from './modules/disputes/disputes.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { ChatbotModule } from './modules/chatbot/chatbot.module';
+import { EmulatorModule } from './modules/emulator/emulator.module';
+import { AppController } from './app.controller';
 
 @Module({
+  controllers: [AppController],
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
@@ -62,6 +65,7 @@ import { ChatbotModule } from './modules/chatbot/chatbot.module';
     // Phase 3: AI + Search + Chatbot
     SearchModule,
     ChatbotModule,
+    EmulatorModule,
     // Phase 4: Drivers + Deliveries
     DriversModule,
     DeliveriesModule,
